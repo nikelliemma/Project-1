@@ -243,7 +243,7 @@ void Dataset<Type>::read_dataset(){
         //read .bvecs file format
         vector<vector<unsigned char> > temp_dataset = read_bvecs(file_str);
         set_dataset(temp_dataset);
-        this->type = UN_INTEGER;
+        this->type = UN_CHAR;
         this->dim = temp_dataset[0].size();
         this->vectors_num = temp_dataset.size();
     }

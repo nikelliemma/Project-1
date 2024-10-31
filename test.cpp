@@ -9,7 +9,7 @@ int main(void){
 
     Dataset<float> d;
 
-    d.set_filename(".fvecs"); //add the fvecs file
+    d.set_filename("siftsmall_base.fvecs"); //add the fvecs file
 
     d.set_type(FLOAT); //set type FLOAT/INTEGER/UN_CHAR
 
