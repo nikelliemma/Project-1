@@ -252,6 +252,8 @@ void Dataset<Type>::read_dataset(){
         vector<vector<int> > temp_dataset = read_ivecs(file_str);
         set_dataset(temp_dataset);
         this->type = INTEGER;
+
+        
         this->dim = temp_dataset[0].size();
         this->vectors_num = temp_dataset.size();
     }
