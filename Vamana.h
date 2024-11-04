@@ -23,7 +23,7 @@ class Vamana{
         
     public:
 
-        Vamana(int R);
+        Vamana(int R, int L, int alpha);
         ~Vamana();
         int get_L();
         int get_R();
@@ -41,8 +41,9 @@ class Vamana{
         void RobustPruning(RRGraph graph, int query, std::unordered_set<int> V_set, float a, int R, std::vector<std::vector<type> > dataset);
         template <typename type>
         int find_medoid(std::vector<std::vector<type> > dataset);
-        void copy_index(RRGraph graph);
-        void create_vamana_index(std::string filepath);
+        double Get_Recall(std::vector<int> vec1, std::vector<int> vec2);
+        //void copy_index(RRGraph graph);
+        void create_vamana_index(std::string filepath, int L, int R, int alpha);
 
 };
 

@@ -7,7 +7,7 @@
 using namespace std; 
 
 
-#define cast(ptr, type) (*static_cast<type*>(ptr))
+// #define cast(ptr, type) (*static_cast<type*>(ptr))
 
 
 const string BVECS_FORMAT = "bvecs";

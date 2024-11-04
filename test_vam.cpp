@@ -40,19 +40,19 @@ int main(void){
 
 
     Dataset<float> d;
-    d.set_filename("/home/users/sdi2000090/projectJJ/ProjectJJ/siftsmall/siftsmall_base.fvecs");
+    d.set_filename("siftsmall_base.fvecs");
     d.set_type(FLOAT);
     d.read_dataset();
 
 
     Dataset<int> groundtruth;
-    groundtruth.set_filename("/home/users/sdi2000090/projectJJ/ProjectJJ/siftsmall/siftsmall_groundtruth.ivecs");
+    groundtruth.set_filename("siftsmall_groundtruth.ivecs");
     groundtruth.set_type(INTEGER);
     groundtruth.read_dataset();
 
 
     Dataset<float> d1;
-    d1.set_filename("/home/users/sdi2000090/projectJJ/ProjectJJ/siftsmall/siftsmall_query.fvecs");
+    d1.set_filename("siftsmall_query.fvecs");
     d1.set_type(FLOAT);
     d1.read_dataset();
 
@@ -64,33 +64,33 @@ int main(void){
 
     // cout << "vector dimension : " << d.get_dim() << endl;
     // cout << "total vector num : " << d.get_vectors_num() << endl;
-    
-    RRGraph g(10);
-    g.create_Rregular_graph(d.get_dataset());
+
+    // RRGraph g(10);
+    // g.create_Rregular_graph(d.get_dataset());
 
     auto start = std::chrono::high_resolution_clock::now();
 
-    Vamana v(50);
+    Vamana v(50, 50, 1);
 
-    RRGraph Vam = v.Vamana_Index(d.get_dataset(), 50, 50, 1);
+    RRGraph Vam = v.Vamana_Index(d.get_dataset(), 100, 50, 1);
 
-    Vam.print_graph();
+    //Vam.print_graph();
 
     int medoid = 8736;
 
-    LVPair res = v.GreedySearch(Vam, medoid, d1.get_vector(0), 50, 50, d.get_dataset()); 
+    LVPair res = v.GreedySearch(Vam, medoid, d1.get_vector(0), 100, 100, d.get_dataset()); 
 
-    // double recall = get_recall(res.first, groundtruth.get_vector(0));
+    double recall = v.Get_Recall(res.first, groundtruth.get_vector(0));
 
-    // cout << "recall : " << recall << "%" << endl;
+    cout << "recall : " << recall << "%" << endl;
 
-    for(int i=0;i<50;i++){
+    for(int i=0;i<100;i++){
         cout << res.first[i] << " ";
     }
     cout << endl;
 
 
-    for(int i=0;i<50;i++){
+    for(int i=0;i<100;i++){
         cout << groundtruth.get_data(0,i) << " ";
     }
     cout << endl;

@@ -16,15 +16,12 @@ typedef struct{
 class RRGraph{
 
     private:
-        //int a;
         int R;
-        //int L;
         int nodes_num;
         std::vector<Node *> adj_list;
 
     public:
-        RRGraph(int k);
-        //RRGraph(const RRGraph& obj); //copy constructor
+        RRGraph(int R);
         ~RRGraph();
         int get_R();
         void set_R(int R);

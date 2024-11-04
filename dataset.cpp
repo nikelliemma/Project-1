@@ -72,13 +72,6 @@ int read_dimension(std::ifstream &file){
     int dimension;
 
     file.read(reinterpret_cast<char *>(&dimension), sizeof(dimension));
-    
-    // if(file.fail()){
-    //     cerr << "Error while reading the dimension of the vectors." << endl;
-    //     return -1;
-    // }
-
-    //this->dim = dimension;
 
     return dimension;
 }
@@ -243,6 +236,9 @@ void Dataset<Type>::read_dataset(){
     if(format == BVECS_FORMAT){
         //read .bvecs file format
         vector<vector<unsigned char> > temp_dataset = read_bvecs(file_str);
+        if(temp_dataset.empty()){
+            return;
+        }
         set_dataset(temp_dataset);
         this->type = UN_INTEGER;
         this->dim = temp_dataset[0].size();
@@ -251,16 +247,20 @@ void Dataset<Type>::read_dataset(){
     else if(format == IVECS_FORMAT){
         //read .ivecs file format
         vector<vector<int> > temp_dataset = read_ivecs(file_str);
+        if(temp_dataset.empty()){
+            return;
+        }
         set_dataset(temp_dataset);
         this->type = INTEGER;
-
-        
         this->dim = temp_dataset[0].size();
         this->vectors_num = temp_dataset.size();
     }
     else if(format == FVECS_FORMAT){
         //read .ivecs file format
         vector<vector<float> > temp_dataset = read_fvecs(file_str);
+        if(temp_dataset.empty()){
+            return;
+        }
         set_dataset(temp_dataset);
         this->type = FLOAT;
         this->dim = temp_dataset[0].size();

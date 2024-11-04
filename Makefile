@@ -1,33 +1,18 @@
-OBJS 	= main.o hashtable.o list.o voter.o mvote.o prompt.o
-SOURCE	= main.c hashtable.c list.c voter.c mvote.c prompt.c
-HEADER	= hashtable.h voter.h list.h mvote.h prompt.h
-OUT		= mvote
-CC		= gcc
-FLAGS	= -g -c
 
-all: $(OBJS)
-	$(CC) -g $(OBJS) -o $(OUT) 
+# Define variables for object files, source files, headers, output executable, compiler, and flags
+SOURCE  = test_vam.cpp Vamana.cpp Graph.cpp dataset.cpp
+HEADER  = Vamana.h Graph.h dataset.h
+OUT     = test_vam
+CC      = g++
+FLAGS   = -g -O3 -std=c++17
 
-main.o: main.c
-	$(CC) $(FLAGS) main.c
+# Default target to build the executable
+all: $(OUT)
 
-mvote.o: mvote.c
-	$(CC) $(FLAGS) mvote.c
+# Link all source files directly to create the final executable
+$(OUT): $(SOURCE) $(HEADER)
+	$(CC) $(FLAGS) $(SOURCE) -o $(OUT)
 
-prompt.o: prompt.c
-	$(CC) $(FLAGS) prompt.c
-
-hashtable.o: hashtable.c
-	$(CC) $(FLAGS) hashtable.c
-
-list.o: list.c
-	$(CC) $(FLAGS) list.c
-
-voter.o: voter.c
-	$(CC) $(FLAGS) voter.c
-
+# Clean up generated files
 clean:
-	rm -f $(OBJS) $(OUT)
-
-count:
-	wc $(SOURCE) $(HEADER)
+	rm -f *.o $(OUT)

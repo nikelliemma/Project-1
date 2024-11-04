@@ -8,6 +8,7 @@
 #include <queue>
 #include <map>
 #include <set>
+#include <unordered_map>
 
 #include "Vamana.h"
 #include "Graph.h"
@@ -17,10 +18,10 @@
 
 
 //constructor
-Vamana::Vamana(int R): vamana_index(R){
+Vamana::Vamana(int R, int L, int alpha): vamana_index(R){
     this->filename = "";
-    this->alpha = 0;
-    this->L = 0;
+    this->alpha = alpha;
+    this->L = L;
     this->R = R;
     return;
 }
@@ -57,24 +58,7 @@ void Vamana::set_alpha(int alpha){
     this->alpha = alpha;
 }
 
-//templated function to compute Euclidean distance between two vectors
-//this function stops earlier if the distance has reached a greater value than the current minimum distance
-// template <typename type>
-// double euclidean_distance(const std::vector<type>& vec1, const std::vector<type>& vec2, double min_distance){
 
-//     double dist = 0.0;
-//     for(int i = 0; i < vec1.size(); ++i){
-
-//         double diff = vec1[i] - vec2[i];
-//         dist += diff * diff;
-
-//         if(dist > min_distance) break;
-
-//     }
-
-//     return std::sqrt(dist);
-//     //return dist;
-// }
 
 //templated function to compute Euclidean distance between two vectors
 template <typename type>
@@ -89,7 +73,6 @@ double euclidean_distance(const std::vector<type>& vec1, const std::vector<type>
     }
 
     return std::sqrt(dist);
-    //return dist;
 }
 
 
@@ -122,43 +105,15 @@ int Vamana::find_medoid(std::vector<std::vector<type> > dataset){
     return medoid_index;    
 }
 
-
-// bool has_unvisited_elements(
-//     const std::priority_queue<std::pair<double, int>, 
-//                               std::vector<std::pair<double, int>>, 
-//                               std::greater<std::pair<double, int>>>& min_heap, 
-//     const std::unordered_set<int>& visited) 
-// {
-//     // Use a temporary min-heap to inspect elements without modifying the original
-//     auto temp_heap = min_heap;
-    
-//     // Limit the number of elements we check to avoid excessive copying
-//     const int max_checks = 10; // arbitrary limit, can be tuned
-//     int checks = 0;
-
-//     // Check if there's an unvisited element in the temporary heap
-//     while (!temp_heap.empty() && checks < max_checks) {
-//         int node_id = temp_heap.top().second;
-//         temp_heap.pop();
-        
-//         if (visited.find(node_id) == visited.end()) {
-//             return true; // Found an unvisited element
-//         }
-//         checks++;
-//     }
-
-//     return false; // No unvisited elements found within the first few entries
-// }
-
 bool has_unvisited_elements(std::priority_queue<std::pair<double, int>, 
                         std::vector<std::pair<double, int>>, 
                         std::greater<std::pair<double, int>>>& min_heap, 
                         const std::unordered_set<int>& visited){
     
-    // Create a copy of the min_heap to avoid modifying the original heap
+    //create a copy of the min_heap to avoid modifying the original heap
     auto min_heap_copy = min_heap;
 
-    // Iterate over the elements in the min_heap
+    //iterate over the elements in the min_heap
     while(!min_heap_copy.empty()){
 
         //get the top element (minimum element in the min-heap)
@@ -167,11 +122,11 @@ bool has_unvisited_elements(std::priority_queue<std::pair<double, int>,
 
         //check if this element is not in the visited set
         if(visited.find(node_id) == visited.end()){
-            return true; // Found an unvisited element
+            return true; //found an unvisited element
         }
     }
 
-    return false; // All elements in the min_heap are visited
+    return false; //all elements in the min_heap are visited
 }
 
 
@@ -273,11 +228,13 @@ LVPair Vamana::GreedySearch(RRGraph graph, int starting_node, std::vector<type> 
 
         //insert the neighbors of the min distance node to the query into the result (L) set
         for(int node: graph.get_node(min_idx)->neighbors){
+
             if(min_heap_nodes.find(node) == min_heap_nodes.end()){    
                 double distance = euclidean_distance(dataset[node], q_vec);
                 min_heap.emplace(distance, node);
                 min_heap_nodes.emplace(node);
             }
+
         }
 
         //update the visited set of visited nodes
@@ -303,7 +260,7 @@ LVPair Vamana::GreedySearch(RRGraph graph, int starting_node, std::vector<type> 
         i++;
     }
     
-    //return the NNs and the visited nodes set
+    //return the k-NNs and the visited nodes set
     return {result, visited};
 }
 
@@ -326,6 +283,8 @@ std::vector<int> get_random_permutation(int n){
 
 }
 
+
+//robust pruning algorithm
 template <typename type>
 void Vamana::RobustPruning(RRGraph graph, int query, std::unordered_set<int> V_set, float alpha, int R, std::vector<std::vector<type> > dataset){
 
@@ -341,6 +300,7 @@ void Vamana::RobustPruning(RRGraph graph, int query, std::unordered_set<int> V_s
 
         min_heap = {};
 
+        //find the minimum distance node that belongs in the V_set
         for(int node : V_set){
             double dis = euclidean_distance(dataset[query], dataset[node]);
             min_heap.emplace(dis, node);
@@ -348,6 +308,7 @@ void Vamana::RobustPruning(RRGraph graph, int query, std::unordered_set<int> V_s
 
         int min_idx = min_heap.top().second;
 
+        //if its not in the neigbors vector add it
         if(std::find(N_out.begin(), N_out.end(), min_idx) == N_out.end()){
             N_out.push_back(min_idx);
         }
@@ -385,7 +346,7 @@ RRGraph Vamana::Vamana_Index(std::vector<std::vector<type> > dataset, int L, int
     int N = dataset.size();
 
     //get the medoid of the dataset 
-    // int medoid_index = find_medoid(dataset);
+    //int medoid_index = find_medoid(dataset);
     int medoid_index = 8736;
 
     //get the random permutation as a starting 
@@ -432,51 +393,85 @@ RRGraph Vamana::Vamana_Index(std::vector<std::vector<type> > dataset, int L, int
 
 }
 
-// std::string extract_format(std::string &file){
+//function to get the recall 
+double Vamana::Get_Recall(std::vector<int> vec1, std::vector<int> vec2){
 
-//     std::string format;
-//     int len = file.length();
+    std::unordered_map<int, int> elementCount;
+    for (int num : vec1) {
+        elementCount[num]++;
+    }
 
-//     int pos = file.find_last_of("/");
-//     std::string file_string = file.substr(pos + 1);
+    //count common elements 
+    int count = 0;
+    for(int num : vec2){
+        if(elementCount[num] > 0){
+            ++count;
+            --elementCount[num]; 
+        }
+    }
 
-//     int index = 0;
-//     while(file[index] != '.'){ index++; }
+    //return recall 
+    return (count * 100) / vec1.size();
 
-//     if(index == len - 1) return "";
+}
 
-//     format = file.substr(index + 1);
+std::string extract_format(std::string &file){
 
-//     return format;
+    std::string format;
+    int len = file.length();
 
-// }
+    int pos = file.find_last_of("/");
+    std::string file_string = file.substr(pos + 1);
+
+    int index = 0;
+    while(file[index] != '.'){ index++; }
+
+    if(index == len - 1) return "";
+
+    format = file.substr(index + 1);
+
+    return format;
+
+}
 
 
 
-// void Vamana::create_vamana_index(std::string filepath){
+void Vamana::create_vamana_index(std::string filepath, int L, int R, int alpha){
 
-//     std::string file_format = extract_format(filepath);
+    std::string file_format = extract_format(filepath);
 
-//     if(file_format == "fvecs"){
-//         Dataset<float> d;
-//         d.set_filename(filepath);
-//         d.read_dataset();
-        
-//     }
-//     else if(file_format == "ivecs"){
-//         Dataset<int> d;
-//         d.set_filename(filepath);
-//         d.read_dataset();
+    if(file_format == "fvecs"){
+        Dataset<float> d;
+        d.set_filename(filepath);
+        d.read_dataset();
 
-//     }
-//     else if(file_format == "bvecs"){
-//         Dataset<unsigned char> d;
-//         d.set_filename(filepath);
-//         d.read_dataset();
+        if(d.get_dataset().empty()){
+            return;
+        }
+        RRGraph Vam = Vamana_Index(d.get_dataset(), L, R, alpha);
+    }
+    else if(file_format == "ivecs"){
+        Dataset<int> d;
+        d.set_filename(filepath);
+        d.read_dataset();
 
-//     }
+        if(d.get_dataset().empty()){
+            return;
+        }
+        RRGraph Vam = Vamana_Index(d.get_dataset(), L, R, alpha);
+    }
+    else if(file_format == "bvecs"){
+        Dataset<unsigned char> d;
+        d.set_filename(filepath);
+        d.read_dataset();
 
-// }
+        if(d.get_dataset().empty()){
+            return;
+        }
+        RRGraph Vam = Vamana_Index(d.get_dataset(), L, R, alpha);
+    }
+
+}
 
 
 

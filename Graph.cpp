@@ -6,19 +6,14 @@
 #include "Graph.h"
 
 
-RRGraph::RRGraph(int k){
-    this->R = k; 
+RRGraph::RRGraph(int R){
+    this->R = R; 
     this->nodes_num = 0;
     return;
 }
 
 RRGraph::~RRGraph(){
 
-    // for(Node* node : this->adj_list){
-    //     delete node;
-    // }
-    // this->adj_list.clear();
-    // return;
 }
 
 int RRGraph::get_R(){
