@@ -151,7 +151,7 @@ vector<vector<int> > read_ivecs(string filename){
             return dataset; //return an empty dataset
         }
 
-        std::size_t size_to_read = dim * sizeof(float);
+        std::size_t size_to_read = dim * sizeof(int);
 
         vector<int> util_vec(dim);
 
@@ -193,7 +193,7 @@ vector<vector<unsigned char> > read_bvecs(string filename){
             return dataset; //return an empty dataset
         }
 
-        std::size_t size_to_read = dim * sizeof(float);
+        std::size_t size_to_read = dim * sizeof(unsigned char);
 
         vector<unsigned char> util_vec(dim);
 
@@ -208,6 +208,7 @@ vector<vector<unsigned char> > read_bvecs(string filename){
     return dataset;
 
 }
+
 
 
 template <typename Type>
@@ -243,7 +244,7 @@ void Dataset<Type>::read_dataset(){
         //read .bvecs file format
         vector<vector<unsigned char> > temp_dataset = read_bvecs(file_str);
         set_dataset(temp_dataset);
-        this->type = UN_CHAR;
+        this->type = UN_INTEGER;
         this->dim = temp_dataset[0].size();
         this->vectors_num = temp_dataset.size();
     }
@@ -279,8 +280,13 @@ template <typename Type>
 vector<Type> Dataset<Type>::get_vector(int index){
     return this->dataset[index];
 }
+template <typename Type>
+vector<vector<Type> > Dataset<Type>::get_dataset(){
+    return this->dataset;
+}
 
 //explicit template instantiation
 template class Dataset<float>;
 template class Dataset<int>;
 template class Dataset<unsigned char>;
+

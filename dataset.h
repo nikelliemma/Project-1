@@ -16,7 +16,7 @@ const string FVECS_FORMAT = "fvecs";
 
 const string INTEGER = "integer";
 const string FLOAT = "float";
-const string UN_CHAR = "un_char";
+const string UN_INTEGER = "un_integer";
 
 template <typename Type>
 
@@ -48,8 +48,9 @@ class Dataset{
 
         template <typename TempType>
         void set_dataset(std::vector<std::vector<TempType> >& source);
+        vector<vector<Type> > get_dataset();
         
 };
 
 
-#endif
+#endif //DATASET_H
