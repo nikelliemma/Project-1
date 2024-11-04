@@ -41,6 +41,7 @@ std::vector<Node *> RRGraph::get_graph(){
     return this->adj_list;
 }
 
+//templated function to create an R-regular directed graph
 template <typename Type>
 void RRGraph::create_Rregular_graph(std::vector<std::vector<Type> > dataset){
 
@@ -73,7 +74,7 @@ void RRGraph::create_Rregular_graph(std::vector<std::vector<Type> > dataset){
     return;
 }
 
-
+//utlity function to print the graph
 void RRGraph::print_graph(){
 
     for (Node* node : adj_list){

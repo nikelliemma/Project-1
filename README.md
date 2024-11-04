@@ -1,9 +1,16 @@
 # Project-1
 1η εργασία Project
 
+compilation:
 
-dataset.cpp:
+make all κάνει compile όλα τα αρχεία 
+make clean διαγράφει όλα τα ".ο" αρχεία
 
-Graph.cpp:
 
-Vamana.cpp:
+
+- dataset.cpp/dataset.h:
+
+
+- Graph.cpp/Graph.h:
+
+- Vamana.cpp/Vamana.h:

@@ -6,10 +6,6 @@
 
 using namespace std; 
 
-
-// #define cast(ptr, type) (*static_cast<type*>(ptr))
-
-
 const string BVECS_FORMAT = "bvecs";
 const string IVECS_FORMAT = "ivecs";
 const string FVECS_FORMAT = "fvecs";
