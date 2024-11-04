@@ -286,53 +286,59 @@ std::vector<int> get_random_permutation(int n){
 
 //robust pruning algorithm
 template <typename type>
-void Vamana::RobustPruning(RRGraph graph, int query, std::unordered_set<int> V_set, float alpha, int R, std::vector<std::vector<type> > dataset){
 
-    std::vector<int> N_out = graph.get_node(query)->neighbors;
-    V_set.insert(N_out.begin(), N_out.end());
-    V_set.erase(query);
 
-    N_out.clear();
+void Vamana::RobustPruning(RRGraph G, int q, std::unordered_set<int> V, float a, int R, std::vector<std::vector<type>> dataset){
+    std::vector<int> out = G.get_node(q)->neighbors;
+    V.insert(out.begin(), out.end());
+    V.erase(q);
+    out.clear();
 
-    std::priority_queue<std::pair<double, int>, std::vector<std::pair<double, int>>, std::greater<std::pair<double, int>>> min_heap;
 
-    while(!V_set.empty()){
+    //create minheap of nodes and their distance from q
+    std::priority_queue<std::pair<double, int>> minHeap{};
 
-        min_heap = {};
+    for(int node : V){
+        minHeap.emplace(-1 * euclidean_distance(dataset[q], dataset[node]), node);
+    }
 
-        //find the minimum distance node that belongs in the V_set
-        for(int node : V_set){
-            double dis = euclidean_distance(dataset[query], dataset[node]);
-            min_heap.emplace(dis, node);
+    while(!V.empty()){
+       int minNode = minHeap.top().second;//get closest node to q
+
+       if(std::find(out.begin(), out.end(), minNode) == out.end()){ //if not there add it to out
+            out.push_back(minNode);
         }
 
-        int min_idx = min_heap.top().second;
-
-        //if its not in the neigbors vector add it
-        if(std::find(N_out.begin(), N_out.end(), min_idx) == N_out.end()){
-            N_out.push_back(min_idx);
+        //if we have enough nodes, stop
+        if(out.size() == R){
+            break;
         }
 
-        if(N_out.size() == R) break;
+        std::unordered_set<int> temp = V;
+        
+        for(int node: temp){
+            double dis1 = euclidean_distance(dataset[minNode], dataset[node]);
+            double dis2 = euclidean_distance(dataset[q], dataset[node]);
 
-        std::unordered_set<int> temp_set = V_set;
-        for(int node: temp_set){
 
-            double dis_1 = euclidean_distance(dataset[min_idx], dataset[node]);
-            double dis_2 = euclidean_distance(dataset[query], dataset[node]);
+            if((a * dis1) <= dis2){
+                V.erase(node);
 
-            if(alpha * dis_1 <= dis_2){
-                V_set.erase(node);
+                //remake heap for updated V
+                minHeap = {};
+                for(int i : V){
+                    minHeap.emplace(-1 * euclidean_distance(dataset[q], dataset[i]), i);
+                }
             }
         }
 
     }
 
-    //update the real graph neighbors with the new N_out neighbors   
-    graph.get_node(query)->neighbors = std::move(N_out);
-
-    return;
+    //update new neighboors
+    G.get_node(q)->neighbors = std::move(out);
+        
 }
+
 
 template <typename type>
 RRGraph Vamana::Vamana_Index(std::vector<std::vector<type> > dataset, int L, int R, float a){
