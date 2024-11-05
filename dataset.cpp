@@ -9,6 +9,7 @@ using namespace std;
 
 
 
+//constructor
 template <typename Type>
 Dataset<Type>::Dataset(){
     this->type = "";
@@ -17,9 +18,12 @@ Dataset<Type>::Dataset(){
     this->vectors_num = 0;
 }
 
+//destructor
 template <typename Type>
 Dataset<Type>::~Dataset(){ }
 
+
+//getters and setters
 template <typename Type>
 string Dataset<Type>::get_filename(){ return this->filename; }
 
@@ -46,6 +50,7 @@ void Dataset<Type>::set_type(string type){ this->type = type; }
 
 
 
+//utility function to extract the format of a file 
 template <typename Type>
 string Dataset<Type>::extract_format(string &file){
 
@@ -67,6 +72,7 @@ string Dataset<Type>::extract_format(string &file){
 }
 
 
+//function to read the dimension 
 int read_dimension(std::ifstream &file){
 
     int dimension;
@@ -76,6 +82,7 @@ int read_dimension(std::ifstream &file){
     return dimension;
 }
 
+//function to read fvecs file format
 vector<vector<float> > read_fvecs(string filename){
 
     vector<vector <float> > dataset;
@@ -118,6 +125,7 @@ vector<vector<float> > read_fvecs(string filename){
 
 }
 
+//function to read ivecs file format
 vector<vector<int> > read_ivecs(string filename){
 
     vector<vector <int> > dataset;
@@ -160,6 +168,7 @@ vector<vector<int> > read_ivecs(string filename){
 
 }
 
+//function to read bvecs file format
 vector<vector<unsigned char> > read_bvecs(string filename){
 
     vector<vector <unsigned char> > dataset;
@@ -227,6 +236,7 @@ void Dataset<Type>::set_dataset(std::vector<std::vector<TempType> >& source){
 }
 
 
+//general function that identifies the file format and reads the contents of the file
 template <typename Type>
 void Dataset<Type>::read_dataset(){
 

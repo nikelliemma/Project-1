@@ -26,13 +26,10 @@ Vamana::Vamana(int R, int L, int alpha): vamana_index(R){
     return;
 }
 
-
-
 //destructor
 Vamana::~Vamana(){
 
 }
-
 
 int Vamana::get_L(){
     return this->L;
@@ -105,6 +102,8 @@ int Vamana::find_medoid(std::vector<std::vector<type> > dataset){
     return medoid_index;    
 }
 
+
+//check if the min heap has elements that are not in the visited set
 bool has_unvisited_elements(std::priority_queue<std::pair<double, int>, 
                         std::vector<std::pair<double, int>>, 
                         std::greater<std::pair<double, int>>>& min_heap, 
@@ -130,6 +129,7 @@ bool has_unvisited_elements(std::priority_queue<std::pair<double, int>,
 }
 
 
+//greedy search function
 template <typename type>
 LVPair Vamana::GreedySearch(RRGraph graph, int starting_node, int query, int k, int L, std::vector<std::vector<type> > dataset){
 
@@ -196,7 +196,7 @@ LVPair Vamana::GreedySearch(RRGraph graph, int starting_node, int query, int k, 
     return {result, visited};
 }
 
-
+//second greedy search function that instead of the index of the node it takes the whole vector as an argument 
 template <typename type>
 LVPair Vamana::GreedySearch(RRGraph graph, int starting_node, std::vector<type> q_vec, int k, int L, std::vector<std::vector<type> > dataset){
 
@@ -492,7 +492,7 @@ std::string extract_format(std::string &file){
 }
 
 
-
+//function to identify the given file and create the Vamana Index 
 void Vamana::create_vamana_index(std::string filepath, int L, int R, int alpha){
 
     std::string file_format = extract_format(filepath);
