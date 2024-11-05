@@ -59,7 +59,11 @@ void Vamana::set_alpha(int alpha){
 
 //templated function to compute Euclidean distance between two vectors
 template <typename type>
-double euclidean_distance(const std::vector<type>& vec1, const std::vector<type>& vec2){
+double Vamana::euclidean_distance(const std::vector<type>& vec1, const std::vector<type>& vec2){
+
+    if(vec1.size() != vec2.size()){
+        throw std::invalid_argument("Vectors must be of the same length.");
+    }
 
     double dist = 0.0;
     for(int i = 0; i < vec1.size(); ++i){
@@ -396,7 +400,6 @@ RRGraph Vamana::Vamana_Index(std::vector<std::vector<type> > dataset, int L, int
     //create a R-regular graph based on the geometric properties of the dataset
     RRGraph graph(R);
     graph.create_Rregular_graph(dataset);
-    //graph.print_graph();
 
     //get the size of the dataset()
     int N = dataset.size();
