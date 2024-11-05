@@ -138,6 +138,8 @@ LVPair Vamana::GreedySearch(RRGraph graph, int starting_node, int query, int k, 
     std::priority_queue<std::pair<double, int>, std::vector<std::pair<double, int>>, std::greater<std::pair<double, int>>> min_heap;
     std::unordered_set<int> visited;
     std::vector<int> result;
+
+    //set to keep track of the nodes that are in min_heap
     std::unordered_set<int> min_heap_nodes;
 
     min_heap.emplace(euclidean_distance(dataset[starting_node], dataset[query]), starting_node);
@@ -335,6 +337,58 @@ void Vamana::RobustPruning(RRGraph graph, int query, std::unordered_set<int> V_s
     return;
 }
 
+// template <typename type>
+// void Vamana::RobustPruning(RRGraph G, int q, std::unordered_set<int> V, float a, int R, std::vector<std::vector<type>> dataset){
+//     std::vector<int> out = G.get_node(q)->neighbors;
+//     V.insert(out.begin(), out.end());
+//     V.erase(q);
+//     out.clear();
+
+
+//     //create minheap of nodes and their distance from q
+//     std::priority_queue<std::pair<double, int>> minHeap;
+
+//     for(auto node : V){
+//         minHeap.emplace(-1 * euclidean_distance(dataset[q], dataset[node]), node);
+//     }
+
+//     while(!V.empty()){
+//         int minNode = minHeap.top().second;//get closest node to q
+
+//         if(std::find(out.begin(), out.end(), minNode) == out.end()){ //if not there add it to out
+//             out.push_back(minNode);
+//         }
+
+//         //if we have enough nodes, stop
+//         if(out.size() == R){
+//             break;
+//         }
+
+//         std::unordered_set<int> temp = V;
+        
+//         for(int node: temp){
+//             double dis1 = euclidean_distance(dataset[minNode], dataset[node]);
+//             double dis2 = euclidean_distance(dataset[q], dataset[node]);
+
+
+//             if((a * dis1) <= dis2){
+//                 V.erase(node);
+
+//                 //remake heap for updated V
+//                 minHeap = {};
+//                 for(int i : V){
+//                     minHeap.emplace(-1 * euclidean_distance(dataset[q], dataset[i]), i);
+//                 }
+//             }
+//         }
+
+//     }
+
+//     //update new neighboors
+//     G.get_node(q)->neighbors = std::move(out);
+        
+// }
+
 template <typename type>
 RRGraph Vamana::Vamana_Index(std::vector<std::vector<type> > dataset, int L, int R, float a){
 
@@ -347,8 +401,8 @@ RRGraph Vamana::Vamana_Index(std::vector<std::vector<type> > dataset, int L, int
     int N = dataset.size();
 
     //get the medoid of the dataset 
-    //int medoid_index = find_medoid(dataset);
-    int medoid_index = 8736;
+    int medoid_index = find_medoid(dataset);
+    //int medoid_index = 8736;
 
     //get the random permutation as a starting 
     std::vector<int> perm = std::move(get_random_permutation(N)); 
@@ -356,7 +410,7 @@ RRGraph Vamana::Vamana_Index(std::vector<std::vector<type> > dataset, int L, int
     //start the Vamana loop 
     for(int i = 0; i < N; i++){
 
-        cout << i << endl;
+        //cout << i << endl;
 
         //run greedy search 
         LVPair greedy_result = GreedySearch(graph, medoid_index, perm[i], 1, L, dataset);
@@ -450,6 +504,8 @@ void Vamana::create_vamana_index(std::string filepath, int L, int R, int alpha){
             return;
         }
         RRGraph Vam = Vamana_Index(d.get_dataset(), L, R, alpha);
+        this->vamana_index = Vam;
+        this->vamana_index.print_graph();
     }
     else if(file_format == "ivecs"){
         Dataset<int> d;
@@ -459,7 +515,9 @@ void Vamana::create_vamana_index(std::string filepath, int L, int R, int alpha){
         if(d.get_dataset().empty()){
             return;
         }
-        RRGraph Vam = Vamana_Index(d.get_dataset(), L, R, alpha);
+        RRGraph Vam = Vamana_Index(d.get_dataset(), L, R, alpha);   
+        this->vamana_index = Vam;
+        this->vamana_index.print_graph();
     }
     else if(file_format == "bvecs"){
         Dataset<unsigned char> d;
@@ -470,8 +528,11 @@ void Vamana::create_vamana_index(std::string filepath, int L, int R, int alpha){
             return;
         }
         RRGraph Vam = Vamana_Index(d.get_dataset(), L, R, alpha);
+        this->vamana_index = Vam;
+        this->vamana_index.print_graph();
     }
 
+    return;
 }
 
 
@@ -494,6 +555,9 @@ template LVPair Vamana::GreedySearch<unsigned char>(RRGraph graph, int starting_
 template LVPair Vamana::GreedySearch<unsigned char>(RRGraph graph, int starting_node, std::vector<unsigned char> q_vec, int k, int L, std::vector<std::vector<unsigned char> > dataset);
 template int Vamana::find_medoid<unsigned char>(std::vector<std::vector<unsigned char> > dataset);
 template RRGraph Vamana::Vamana_Index<unsigned char>(std::vector<std::vector<unsigned char> > dataset, int L, int R, float a);
+
+
+
 
 
 

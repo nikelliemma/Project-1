@@ -22,7 +22,6 @@ Dataset<Type>::Dataset(){
 template <typename Type>
 Dataset<Type>::~Dataset(){ }
 
-
 //getters and setters
 template <typename Type>
 string Dataset<Type>::get_filename(){ return this->filename; }

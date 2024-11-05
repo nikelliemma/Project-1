@@ -42,7 +42,7 @@ class Vamana{
         template <typename type>
         int find_medoid(std::vector<std::vector<type> > dataset);
         double Get_Recall(std::vector<int> vec1, std::vector<int> vec2);
-        //void copy_index(RRGraph graph);
+        void copy_index(RRGraph graph);
         void create_vamana_index(std::string filepath, int L, int R, int alpha);
 
 };

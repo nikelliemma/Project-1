@@ -13,7 +13,6 @@ RRGraph::RRGraph(int R){
 }
 
 RRGraph::~RRGraph(){
-
 }
 
 int RRGraph::get_R(){

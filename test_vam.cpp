@@ -32,9 +32,11 @@ int main(void){
 
     auto start = std::chrono::high_resolution_clock::now();
 
-    Vamana v(50, 50, 1);
+    Vamana v(100, 100, 1);
 
-    RRGraph Vam = v.Vamana_Index(d.get_dataset(), 100, 50, 1);
+    //v.create_vamana_index("siftsmall_base.fvecs", 50, 20, 1);
+
+    RRGraph Vam = v.Vamana_Index(d.get_dataset(), 100, 100, 1);
 
     auto end = std::chrono::high_resolution_clock::now();
     auto duration = std::chrono::duration_cast<std::chrono::seconds>(end - start).count();
@@ -44,11 +46,13 @@ int main(void){
 
     int medoid = 8736;
 
-    LVPair res = v.GreedySearch(Vam, medoid, d1.get_vector(0), 50, 50, d.get_dataset()); 
+    for(int i=0;i<d1.get_dataset().size(); i++){
+        LVPair res = v.GreedySearch(Vam, medoid, d1.get_vector(i), 100, 100, d.get_dataset()); 
 
-    double recall = v.Get_Recall(res.first, groundtruth.get_vector(0));
+        double recall = v.Get_Recall(res.first, groundtruth.get_vector(i));
 
-    cout << "recall : " << recall << "%" << endl;
+        cout << "Query " << i << ": recall = " << recall << "%" << endl;
+    }
 
     // for(int i=0;i<100;i++){
     //     cout << res.first[i] << " ";
