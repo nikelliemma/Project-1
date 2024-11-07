@@ -47,3 +47,5 @@ Yπάρχουν δύο συναρτήσεις GreedySearch και η μόνη δ
 το index του node ενώ η 2η δέχεται όλο τον vector.
 
 Vamana Index: 
+
+Για τη δημιουργία του Vamana Index υπάρχουν δύο συναρτήσεις/μέθοδοι της κλάσης Vamana. H πρώτη ονομάζετα Vamana_Index() και δημιουργεί κανονικά τον Vamana γράφο (επιστρέφει RRGraph object). Η δεύερη ονομάζεται create_vamana_index() η οποία παίρνει σαν input το αρχείο, αναγνωρίζει το format του, δηλαδή αν είναι fvecs, bvecs ή ivecs, στη συνέχεια διαβάζει το αρχείο, αποθηκεύει το dataset και καλεί την Vamana_Index() γιανα δημιουργήσει τον Vamana γράφο τον οποίο αποθηκεύει στο private member της Vamana class.
