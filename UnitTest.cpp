@@ -1,55 +1,12 @@
-#include "acutest.h"
 
+#include <iostream>
 #include <vector>
 #include <unordered_set>
-#include <exception>
+#include <cmath>
 #include <stdexcept>
-#include <string>
-#include <math.h>
 
+#include "acutest.h"
 #include "Vamana.h"
-#include "Graph.h"
-#include "dataset.h"
-
-
-double vam_index(int L, int R, float alpha, int k){
-
-    Dataset<float> d;
-    d.set_filename("siftsmall_base.fvecs");
-    d.set_type(FLOAT);
-    d.read_dataset();
-
-
-    Dataset<int> groundtruth;
-    groundtruth.set_filename("siftsmall_groundtruth.ivecs");
-    groundtruth.set_type(INTEGER);
-    groundtruth.read_dataset();
-
-
-    Dataset<float> d1;
-    d1.set_filename("siftsmall_query.fvecs");
-    d1.set_type(FLOAT);
-    d1.read_dataset();
-
-    Vamana v(R, L, alpha);
-
-    RRGraph Vam = v.Vamana_Index(d.get_dataset(), L, R, alpha);
-    
-    int medoid = v.find_medoid(d.get_dataset());
-
-    double recall_counter = 0;
-
-    for(int i=0; i<d1.get_dataset().size(); i++){
-
-        LVPair res = v.GreedySearch(Vam, medoid, d1.get_vector(i), k, L, d.get_dataset()); 
-
-        double recall = v.Get_Recall(res.first, groundtruth.get_vector(i));
-
-        recall_counter += recall;
-    }
-
-    return recall_counter / k;
-}
 
 
 // tests for euclidean
@@ -155,18 +112,16 @@ void test_pruning(void){
         {4.0, 4.0}
     };
 
-    std::unordered_set<int> V;
+    std::unordered_set<int> V = {1, 2, 3, 4};
     int q = 0, R = 2;
     float a = 1.5;
     Vamana myVam(1,1,1);
 
     const std::vector<int>& pruned_neighboors = G.get_node(q)->neighbors;
-    myVam.find_medoid(data);
 
+    myVam.RobustPruning(G, q, V, a, R, data);
 
-    //myVam.RobustPruning(G, q, V, a, R, data);
-
-    //TEST_CHECK(((G.get_node(q)->neighbors).size()) <= R);
+    TEST_CHECK(((G.get_node(q)->neighbors).size()) <= R);
     
 }
 
