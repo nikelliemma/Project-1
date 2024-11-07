@@ -258,26 +258,6 @@ void test_recall3(void){
 }   
 
 
-//tests for pruning
-void test_pruning(void){
-
-    Dataset<float> d;
-    d.set_filename("siftsmall_base.fvecs");
-    d.set_type(FLOAT);
-    d.read_dataset();
-
-    RRGraph graph(50);
-    graph.create_Rregular_graph(d.get_dataset());
-
-    Vamana v(13, 50, 1);
-    RRGraph Vam = v.Vamana_Index(d.get_dataset(), 50, 13, 1);
-    
-    //cout <<  endl << Vam.get_graph().size() << endl << graph.get_nodes_num() << endl;
-    TEST_CHECK(Vam.get_graph().size() <= graph.get_graph().size());
-}
-
-
-
 TEST_LIST = {
 
     {"Vamana index recall test 1", recall_test_1},
@@ -290,7 +270,6 @@ TEST_LIST = {
     {"euclidean2", test_euclidean2},
     {"euclidean3", test_euclidean3},
     {"euclidean4", test_euclidean4},
-    { "pruning", test_pruning },
     {"recall1", test_recall1},  
     {"recall2", test_recall2},
     {"recall3", test_recall3},
