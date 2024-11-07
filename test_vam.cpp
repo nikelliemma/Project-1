@@ -52,7 +52,7 @@ int main(int argc , char * argv[]){
 
 
 
-    Vam.print_graph();
+    //Vam.print_graph();
     std::cout << "Vamana index created in : " << duration << " seconds" << std::endl;   
 
 
