@@ -40,9 +40,11 @@ std::vector<Node *> RRGraph::get_graph(){
     return this->adj_list;
 }
 
-//templated function to create an R-regular directed graph
+//templated function to create a random R-regular directed graph
 template <typename Type>
 void RRGraph::create_Rregular_graph(std::vector<std::vector<Type> > dataset){
+
+    if(this->R <= 0) return;
 
     int vecs_num = dataset.size();
     set_nodes_num(vecs_num);
@@ -60,6 +62,7 @@ void RRGraph::create_Rregular_graph(std::vector<std::vector<Type> > dataset){
 
             int random_number = dis(gen);
 
+            //ensure that the edge doesnt already exist in the neighbors vector
             while(random_number == i || std::find(new_node->neighbors.begin(), new_node->neighbors.end(), random_number) != new_node->neighbors.end()){
                 random_number = dis(gen);
             }

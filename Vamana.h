@@ -31,6 +31,8 @@ class Vamana{
         void set_L(int L);
         void set_R(int R);
         void set_alpha(int alpha);
+        void set_index(RRGraph graph);
+        RRGraph get_index();
         template <typename type>
         double euclidean_distance(const std::vector<type>& vec1, const std::vector<type>& vec2);
         template <typename Type>
@@ -44,7 +46,6 @@ class Vamana{
         template <typename type>
         int find_medoid(std::vector<std::vector<type> > dataset);
         double Get_Recall(std::vector<int> vec1, std::vector<int> vec2);
-        void copy_index(RRGraph graph);
         void create_vamana_index(std::string filepath, int L, int R, int alpha);
 
 };

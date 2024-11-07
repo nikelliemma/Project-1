@@ -4,6 +4,11 @@
 #include <iostream>
 #include <vector>
 
+
+//Dataset class, this class handles the input files. It reads fvecs,bvecs and ivecs files
+//and saves them into a vector that consists of vectors. (vector<vector<type>>, where type is either
+// int float or unsigned char)
+
 using namespace std; 
 
 const string BVECS_FORMAT = "bvecs";
