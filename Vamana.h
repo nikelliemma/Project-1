@@ -1,5 +1,5 @@
-#ifndef VAMANA1_H
-#define VAMANA1_H
+#ifndef VAMANA_H
+#define VAMANA_H
 
 #include <iostream>
 #include <vector>
