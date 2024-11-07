@@ -67,6 +67,8 @@ void recall_test_3(){
 
 
 
+
+
 void test_index(){
 
     Dataset<float> d;
@@ -89,14 +91,54 @@ void test_index(){
     
 }
 
+//test to check if the edges of each node in the Vamana graph are <= R
+void Vam_Index_Graph_Test(){
+
+    Dataset<float> d;
+    d.set_filename("siftsmall_base.fvecs");
+    d.set_type(FLOAT);
+    d.read_dataset();
+
+
+    Vamana v(13, 50, 1);
+
+    RRGraph Vam = v.Vamana_Index(d.get_dataset(), 50, 13, 1);
+
+    int counter = 0;
+    for(int i = 0 ; i < Vam.get_nodes_num(); i++){
+        if(Vam.get_node(i)->neighbors.size() <= 13) counter++;
+    }
+
+    TEST_CHECK(counter==Vam.get_nodes_num());
+
+}
+
 
 void medoid_test(){
+
+    //siftsmall dataset medoid 
     Dataset<float> d;
     d.set_filename("siftsmall_base.fvecs");
     d.set_type(FLOAT);
     d.read_dataset();
     Vamana v(1,1,1);
     TEST_CHECK(v.find_medoid(d.get_dataset()) == 8736);
+
+    //single vector test
+    std::vector<std::vector<float>> dataset1 = {{1.0, 2.0}};
+    TEST_CHECK(v.find_medoid(dataset1) == 0);
+
+    //2 identical vectors test
+    std::vector<std::vector<float>> dataset2 = {{1.0, 2.0}, {1.0, 2.0}};
+    TEST_CHECK(v.find_medoid(dataset2) == 0 || v.find_medoid(dataset2) == 1);
+
+    //3 2-dimensional vectors
+    std::vector<std::vector<float>> dataset3 = {{1.0, 2.0}, {2.0, 3.0}, {3.0, 2.0}};
+    TEST_CHECK(v.find_medoid(dataset3) == 1);   
+
+    //4 3-dimensional vectors
+    std::vector<std::vector<float>> dataset4 = {{1.0, 2.0, 3.0}, {2.0, 3.0, 4.0}, {4.0, 0.0, 1.0}, {3.0, 3.0, 3.0}};
+    TEST_CHECK(v.find_medoid(dataset4) == 3);
 }
 
 
@@ -127,8 +169,7 @@ bool check_graph(int R){
     return false;
 }
 
-
-
+//test to check if every node in the random R-regular graph has R edges
 void R_regular_graph_test(){
     TEST_CHECK(check_graph(10));
     TEST_CHECK(check_graph(4));
@@ -136,19 +177,15 @@ void R_regular_graph_test(){
 }
 
 
-void greedy_search_test(){
-    return;
-}
-
 
 TEST_LIST = {
 
-    {"recall test 1", recall_test_1},
-    {"recall test 2", recall_test_2},
-    {"recall test 3", recall_test_3},
-    {"medoid:", medoid_test},
+    {"Vamana index recall test 1", recall_test_1},
+    {"Vamana index recall test 2", recall_test_2},
+    {"Vamana index recall test 3", recall_test_3},
+    {"Vamana graph test", Vam_Index_Graph_Test},
+    {"medoid tests", medoid_test},
     {"R-regular graph", R_regular_graph_test},
-    {"Greedy Search test", greedy_search_test},
     {0}
 
 };
