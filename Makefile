@@ -6,7 +6,8 @@ HEADER          = dataset.h Graph.h Vamana.h acutest.h
 OUT_PROJECT     = test_vam
 OUT_TEST        = unit_testing
 CC              = g++
-FLAGS           = -std=c++17
+FLAGS           = -std=c++17 
+FLAGS_1         = -std=c++17 -O3
 
 # Default target to build the executable
 all: $(OUT_PROJECT) $(OUT_TEST)
@@ -18,7 +19,7 @@ test: $(OUT_TEST)
 
 # Link all source files directly to create the final executable
 $(OUT_PROJECT): $(SOURCE_PROJECT) $(HEADER)
-	$(CC) $(FLAGS) $(SOURCE_PROJECT) -o $(OUT_PROJECT)
+	$(CC) $(FLAGS_1) $(SOURCE_PROJECT) -o $(OUT_PROJECT)
 
 #RULE FOR UNIT TESTING
 $(OUT_TEST): $(SOURCE_TEST) $(HEADER)

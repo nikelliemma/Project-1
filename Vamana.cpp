@@ -366,8 +366,8 @@ RRGraph Vamana::Vamana_Index(std::vector<std::vector<type> > dataset, int L, int
     int N = dataset.size();
 
     //get the medoid of the dataset 
-    int medoid_index = find_medoid(dataset);
-    //int medoid_index = 8736;
+    //int medoid_index = find_medoid(dataset);
+    int medoid_index = 8736;
 
     //get the random permutation as a starting 
     std::vector<int> perm = std::move(get_random_permutation(N)); 
@@ -375,7 +375,7 @@ RRGraph Vamana::Vamana_Index(std::vector<std::vector<type> > dataset, int L, int
     //start the Vamana loop 
     for(int i = 0; i < N; i++){
 
-        //cout << i << endl;
+        cout << i << endl;
 
         //run greedy search 
         LVPair greedy_result = GreedySearch(graph, medoid_index, perm[i], 1, L, dataset);
