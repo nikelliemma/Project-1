@@ -355,7 +355,7 @@ void Vamana::RobustPruning(RRGraph G, int q, std::unordered_set<int> V, float a,
 
 
 
-//robust pruning algorithm
+// filtered robust pruning algorithm
 template <typename type>
 void Vamana::FilteredRobustPruning(RRGraph G, int q, std::unordered_set<int> V, float a, int R, std::vector<std::vector<type>> dataset){
     std::vector<int> out = G.get_node(q)->neighbors;
@@ -387,14 +387,26 @@ void Vamana::FilteredRobustPruning(RRGraph G, int q, std::unordered_set<int> V, 
 
         for(int node: temp){
             
-                
-
-            /*int 
-            if(Fnode + Fquery != FminNode){
-                continue;
+            int filterNode = dataset[node].categorical;
+            int filterQ = dataset[q].categorical;
+            int filterMin = dataset[minNode].categorical;
+            
+            if(filterMin != -1){
+                if(filterNode == -1){
+                    if(filterQ != filterMin){
+                        continue;
+                    }
+                }else if(filterQ == -1){
+                    if(filterNode != filterMin){
+                        continue;
+                    }
+                }else if(filterNode == filterQ){
+                    if(filterNode != filterMin){
+                        continue;
+                    }
+                }
             }
-            */
-
+    
             double dis1 = euclidean_distance(dataset[minNode], dataset[node]);
             double dis2 = euclidean_distance(dataset[q], dataset[node]);
 
