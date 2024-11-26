@@ -355,6 +355,68 @@ void Vamana::RobustPruning(RRGraph G, int q, std::unordered_set<int> V, float a,
 
 
 
+//robust pruning algorithm
+template <typename type>
+void Vamana::FilteredRobustPruning(RRGraph G, int q, std::unordered_set<int> V, float a, int R, std::vector<std::vector<type>> dataset){
+    std::vector<int> out = G.get_node(q)->neighbors;
+    V.insert(out.begin(), out.end());
+    V.erase(q);
+    out.clear();
+
+    //create minheap of nodes and their distance from q
+    std::priority_queue<std::pair<double, int>> minHeap{};
+
+    for(int node : V){
+        minHeap.emplace(-1 * euclidean_distance(dataset[q], dataset[node]), node);//* (-1) to make it min from max
+    }
+
+    while(!V.empty()){
+       int minNode = minHeap.top().second;//get closest node to q
+
+       if(std::find(out.begin(), out.end(), minNode) == out.end()){ //if not there add it to out
+            out.push_back(minNode);
+        }
+
+        //if we have enough nodes, stop
+        if(out.size() == R){
+            break;
+        }
+
+        std::unordered_set<int> temp = V;
+        
+
+        for(int node: temp){
+            
+                
+
+            /*int 
+            if(Fnode + Fquery != FminNode){
+                continue;
+            }
+            */
+
+            double dis1 = euclidean_distance(dataset[minNode], dataset[node]);
+            double dis2 = euclidean_distance(dataset[q], dataset[node]);
+
+            if((a * dis1) <= dis2){
+                V.erase(node);
+
+                //remake heap for updated V
+                minHeap = {};
+                for(int i : V){
+                    minHeap.emplace(-1 * euclidean_distance(dataset[q], dataset[i]), i);
+                }
+            }
+        }
+
+    }
+
+    //update new neighboors
+    G.get_node(q)->neighbors = std::move(out);
+        
+}
+
+
 template <typename type>
 RRGraph Vamana::Vamana_Index(std::vector<std::vector<type> > dataset, int L, int R, float a){
 

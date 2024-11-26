@@ -44,6 +44,8 @@ class Vamana{
         template <typename type>
         void RobustPruning(RRGraph graph, int query, std::unordered_set<int> V_set, float a, int R, std::vector<std::vector<type> > dataset);
         template <typename type>
+        void FilteredRobustPruning(RRGraph G, int q, std::unordered_set<int> V, float a, int R, std::vector<std::vector<type>> dataset);
+        template <typename type>
         int find_medoid(std::vector<std::vector<type> > dataset);
         double Get_Recall(std::vector<int> vec1, std::vector<int> vec2);
         void create_vamana_index(std::string filepath, int L, int R, int alpha);
