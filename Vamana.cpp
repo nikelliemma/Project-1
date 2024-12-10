@@ -406,7 +406,7 @@ void Vamana::FilteredRobustPruning(RRGraph G, int q, std::unordered_set<int> V, 
                     }
                 }
             }
-    
+            //just a test
             double dis1 = euclidean_distance(dataset[minNode], dataset[node]);
             double dis2 = euclidean_distance(dataset[q], dataset[node]);
 
@@ -490,6 +490,14 @@ RRGraph Vamana::Vamana_Index(std::vector<std::vector<type> > dataset, int L, int
     return graph;
 
 }
+
+template <typename type>
+RRGraph Vamana::StitchedVamana(std::vector<std::vector<type> > dataset, int Lsmall, int Rsmall, int Rstitched, float a){
+    //G emty graph
+
+    //get 
+}
+
 
 //function to get the recall 
 double Vamana::Get_Recall(std::vector<int> vec1, std::vector<int> vec2){
@@ -577,7 +585,6 @@ void Vamana::create_vamana_index(std::string filepath, int L, int R, int alpha){
 
     return;
 }
-
 
 
 
