@@ -492,10 +492,30 @@ RRGraph Vamana::Vamana_Index(std::vector<std::vector<type> > dataset, int L, int
 }
 
 template <typename type>
-RRGraph Vamana::StitchedVamana(std::vector<std::vector<type> > dataset, int Lsmall, int Rsmall, int Rstitched, float a){
-    //G emty graph
+RRGraph Vamana::StitchedVamana(std::vector<std::vector<type>> dataset, std::unordered_set<int> filters, int Lsmall, int Rsmall, int Rstitched, float a){
+    
+    std::vector<std::vector<type>> points;
+    int flag = 0;
+    std::vector<
+    
+    //create sets of points for each filter and run vamana for each
+    for(int f : filters){
 
-    //get 
+        points.clear();
+
+        for(int i : dataset[i]){
+            if(dataset[i].filter == f){
+                points.push_back(i);
+            }else if(dataset[i].filter == -1){
+                points.push_back(i);
+                flag = 1;
+            }
+        }
+
+        //call vamana for each set and create seperate graphs
+    }
+
+
 }
 
 
