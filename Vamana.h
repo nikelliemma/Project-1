@@ -4,9 +4,11 @@
 #include <iostream>
 #include <vector>
 #include <unordered_set>
+#include <map>
 
 
 #include "dataset.h"
+#include "filtered_dataset.h"
 #include "Graph.h"
 
 typedef std::pair<std::vector<int>, std::unordered_set<int> > LVPair;
@@ -42,7 +44,7 @@ class Vamana{
         template <typename type>
         RRGraph Vamana_Index(std::vector<std::vector<type> > dataset, int L, int R, float a);
         template <typename type>
-        RRGraph StitchedVamana(std::vector<std::vector<type> > dataset, std::unordered_set<int> filters, int Lsmall, int Rsmall, int Rstitched, float a);
+        RRGraph StitchedVamana(std::vector<std::vector<type> > dataset, int Lsmall, int Rsmall, int Rstitched, float a);
         template <typename type>
         void RobustPruning(RRGraph graph, int query, std::unordered_set<int> V_set, float a, int R, std::vector<std::vector<type> > dataset);
         template <typename type>
@@ -51,6 +53,14 @@ class Vamana{
         int find_medoid(std::vector<std::vector<type> > dataset);
         double Get_Recall(std::vector<int> vec1, std::vector<int> vec2);
         void create_vamana_index(std::string filepath, int L, int R, int alpha);
+        void FilteredRobustPruning(RRGraph G, int q, std::unordered_set<int> V, float a, int R, FilteredDataset f_dataset);
+        LVPair FilteredGreedySearch(RRGraph graph, std::map<int, int> S_nodes, int query_vec, int k, int L, std::unordered_set<int> filters, std::vector<Data_Point> dataset, std::vector<Data_Point> Q_dataset);
+        //LVPair FilteredGreedySearch(RRGraph graph, int starting_node, int query_vec, int k, int L, std::unordered_set<int> filters, std::vector<Data_Point> dataset);
+        LVPair FilteredGreedySearch(RRGraph graph, std::map<int, int> S_nodes, int query_vec, int k, int L, std::unordered_set<int> filters, std::vector<Data_Point> dataset);
+        std::map<int, int> Filtered_Find_Medoid(std::vector<Data_Point> dataset, std::unordered_set<int> filters,int threshold);
+        RRGraph Filtered_Vamana_Index(FilteredDataset dataset_obj, int L, int R, float a);
+
+        int find_medoid_f(std::vector<Data_Point> dataset);
 
 };
 

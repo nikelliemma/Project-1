@@ -4,6 +4,7 @@
 #include <random> 
 
 #include "Graph.h"
+#include "filtered_dataset.h"
 
 
 RRGraph::RRGraph(int R){
@@ -74,6 +75,21 @@ void RRGraph::create_Rregular_graph(std::vector<std::vector<Type> > dataset){
     }
     
     return;
+}
+
+// Function to create an empty R-regular graph
+void RRGraph::create_Rregular_empty_graph(std::vector<Data_Point> dataset){
+    int size = dataset.size(); // Number of data points in the dataset
+
+    // Clear the adjacency list to ensure no leftover data from previous calls
+    this->adj_list.clear();
+    
+    // Create a new node for each data point
+    for(int i = 0; i < size; i++){
+        Node* new_node = new Node;  // Dynamically allocate a new Node
+        new_node->node_id = i;      // Assign a unique ID to the node
+        this->adj_list.push_back(new_node);  // Add the node to the adjacency list
+    }
 }
 
 //utlity function to print the graph
