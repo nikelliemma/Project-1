@@ -3,6 +3,9 @@
 #include <algorithm>
 #include <random> 
 
+#include <fstream>
+#include <stdexcept>
+
 #include "Graph.h"
 #include "filtered_dataset.h"
 
@@ -106,6 +109,76 @@ void RRGraph::print_graph(){
         std::cout << std::endl;
     }
 }
+
+// Function to write the graph to a binary file
+void RRGraph::write_to_binary_file(const std::string& filename){
+    std::ofstream outfile(filename, std::ios::binary);
+    if (!outfile) {
+        throw std::runtime_error("Unable to open file for writing: " + filename);
+    }
+
+    // Write R and nodes_num
+    outfile.write(reinterpret_cast<const char*>(&this->R), sizeof(this->R));
+    outfile.write(reinterpret_cast<const char*>(&this->nodes_num), sizeof(this->nodes_num));
+
+    // Write each node and its neighbors
+    for (Node* node : this->adj_list) {
+        // Write node ID
+        outfile.write(reinterpret_cast<const char*>(&node->node_id), sizeof(node->node_id));
+
+        // Write the number of neighbors
+        int neighbors_count = node->neighbors.size();
+        outfile.write(reinterpret_cast<const char*>(&neighbors_count), sizeof(neighbors_count));
+
+        // Write the neighbors
+        for (int neighbor : node->neighbors) {
+            outfile.write(reinterpret_cast<const char*>(&neighbor), sizeof(neighbor));
+        }
+    }
+
+    outfile.close();
+}
+
+// Function to read the graph from a binary file
+void RRGraph::read_from_binary_file(const std::string& filename) {
+    std::ifstream infile(filename, std::ios::binary);
+    if (!infile) {
+        throw std::runtime_error("Unable to open file for reading: " + filename);
+    }
+
+    // Clear the existing adjacency list
+    for (Node* node : this->adj_list) {
+        delete node;
+    }
+    this->adj_list.clear();
+
+    // Read R and nodes_num
+    infile.read(reinterpret_cast<char*>(&this->R), sizeof(this->R));
+    infile.read(reinterpret_cast<char*>(&this->nodes_num), sizeof(this->nodes_num));
+
+    // Read each node and its neighbors
+    for (int i = 0; i < this->nodes_num; i++) {
+        Node* new_node = new Node;
+
+        // Read node ID
+        infile.read(reinterpret_cast<char*>(&new_node->node_id), sizeof(new_node->node_id));
+
+        // Read the number of neighbors
+        int neighbors_count;
+        infile.read(reinterpret_cast<char*>(&neighbors_count), sizeof(neighbors_count));
+
+        // Read the neighbors
+        new_node->neighbors.resize(neighbors_count);
+        for (int j = 0; j < neighbors_count; j++) {
+            infile.read(reinterpret_cast<char*>(&new_node->neighbors[j]), sizeof(new_node->neighbors[j]));
+        }
+
+        this->adj_list.push_back(new_node);
+    }
+
+    infile.close();
+}
+
 
 
 
