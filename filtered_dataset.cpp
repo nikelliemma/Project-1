@@ -137,6 +137,7 @@ void FilteredDataset::read_Query_set(){
         file.read(reinterpret_cast<char*>(query.data_vector.data()), sizeof(float) * this->get_dimension());
 
         // Add the query to the query set
+        if(query_type != 0 && query_type != 1) continue;
         query_set.push_back(query);
         
     }

@@ -3,57 +3,21 @@
 #include <algorithm>
 #include <fstream>
 #include <sstream>
-//#include "dataset.h"
-//#include "Graph.h"
+#include <algorithm>
+#include <vector>
+
 
 #include "Vamana.h"
 
 using namespace std;
 
+// Function to print a map<int, int>
+void printMap(const std::map<int, int>& m) {
+    for (const auto& pair : m) {
+        std::cout << "Key: " << pair.first << ", Value: " << pair.second << std::endl;
+    }
+}
 
-
-// std::vector<std::vector<int>> parseFile(const std::string& file_path) {
-//     // Vector of vectors to store closest points for each query
-//     std::vector<std::vector<int>> closest_points;
-
-//     // Open the file
-//     std::ifstream file(file_path);
-//     if (!file.is_open()) {
-//         std::cerr << "Error: Unable to open file!" << std::endl;
-//         return closest_points; // Return empty if file can't be opened
-//     }
-
-//     std::string line;
-//     while (std::getline(file, line)) {
-//         std::stringstream ss(line);
-//         std::string word;
-
-//         // Check if the line contains a query
-//         if (line.find("query") != std::string::npos) {
-//             std::vector<int> points;
-
-//             // Skip "closest 100 points are:" and move to the next line
-//             std::getline(file, line);
-//             std::stringstream points_stream(line);
-
-//             while (std::getline(points_stream, word, ',')) {
-//                 // Parse each number and add to the vector
-//                 try {
-//                     points.push_back(std::stoi(word));
-//                 } catch (const std::invalid_argument&) {
-//                     // Handle any non-integer values gracefully
-//                     continue;
-//                 }
-//             }
-
-//             // Store the closest points in the main vector
-//             closest_points.push_back(points);
-//         }
-//     }
-
-//     file.close();
-//     return closest_points;
-// }
 
 
 // Function to read the file and store closest points into a vector of vectors
@@ -99,6 +63,63 @@ std::vector<std::vector<int>> readClosestPoints(const std::string& filePath) {
     return closestPoints;
 }
 
+std::vector<std::vector<int>> ReadKNN(const std::string &path) {
+    std::ifstream ifs(path, std::ios::in | std::ios::binary);
+    assert(ifs.is_open() && "Failed to open KNN file");
+
+    const int K = 100; // Each row has 100 nearest neighbors
+
+    // Get the file size to calculate the number of rows
+    ifs.seekg(0, std::ios::end);
+    std::streamsize file_size = ifs.tellg();
+    ifs.seekg(0, std::ios::beg);
+
+    // Calculate the number of rows (N)
+    int N = file_size / (K * sizeof(int));
+    std::vector<std::vector<int>> knns(N, std::vector<int>(K));
+
+    // Read the data row by row
+    for (int i = 0; i < N; ++i) {
+        ifs.read(reinterpret_cast<char *>(knns[i].data()), K * sizeof(int));
+    }
+
+    ifs.close();
+    cout << "Successfully loaded " << N << " rows of KNN data from " << path << endl;
+    return knns;
+}
+
+// std::vector<std::vector<int>> ReadKNN(const std::string &path) {
+//     std::ifstream ifs(path, std::ios::in | std::ios::binary);
+//     assert(ifs.is_open() && "Failed to open KNN file");
+
+//     const int K = 100; // Each row has 100 nearest neighbors
+
+//     // Get the file size to calculate the number of rows
+//     ifs.seekg(0, std::ios::end);
+//     std::streamsize file_size = ifs.tellg();
+//     ifs.seekg(0, std::ios::beg);
+
+//     // Calculate the number of rows (N)
+//     int N = file_size / (K * sizeof(int));
+//     std::vector<std::vector<int>> knns;
+
+//     // Read the data row by row
+//     for (int i = 0; i < N; ++i) {
+//         std::vector<int> row(K);
+//         ifs.read(reinterpret_cast<char *>(row.data()), K * sizeof(int));
+
+//         // Check query type (first value in the row)
+//         int query_type = row[0];
+//         if (query_type == 0 || query_type == 1) {
+//             knns.push_back(row);
+//         }
+//     }
+
+//     ifs.close();
+//     cout << "Successfully loaded " << knns.size() << " filtered rows of KNN data from " << path << endl;
+//     return knns;
+// }
+
 
 int main(int argc, char*argv[]){
 
@@ -119,68 +140,25 @@ int main(int argc, char*argv[]){
     d.set_filepath(filename);
     d.read_Dataset();
 
-
-    // cout << "vector 9999: \n";
-    // for(int i = 0; i< d.get_dimension(); i++){
-    //     cout << d.get_data_point(9999).data_vector[i] << " ";
-    // }
-    // cout << endl;
-    // cout << "categorical : " << d.get_data_point(9999).categorical << endl;
-    //out << d.get_data_point(0).data_vector.size() << endl;
-
-    // for( int i = 0; i<d.get_dataset().size(); i++){
-    //    cout << "vector " << i << " categorical : " << d.get_data_point(i).categorical << endl; 
-    // }
-
-    // for(int i = 0; i< 10000; i++){
-    //     if(d.get_data_point(i).categorical == -1) cout << "LOLOLOLOL\n";
-    // }
-
-
     Vamana v(R,L,alpha);
 
 
     auto start = std::chrono::high_resolution_clock::now();
 
-    // RRGraph Vam(R);
-
-    // Vam.create_Rregular_empty_graph(d.get_dataset());
-
-    // int medoid = v.find_medoid_f(d.get_dataset());
-
-    // LVPair res = v.FilteredGreedySearch(Vam, medoid, 5432, 10, L, d.get_filter_set(), d.get_dataset());
-
-    // for( int node: res.first){
-    //     cout << node << " ";
-    // }
-    // cout << endl;
-
-    // cout << "VISITED NODES\n";
-
-    // for (const auto& element : res.second) {
-    //     std::cout << element << " ";
-    // }
-    // cout << endl;
-
-    RRGraph Vam = v.Filtered_Vamana_Index(d, L, R, alpha);
-    Vam.print_graph();
+    // RRGraph Vam = v.Filtered_Vamana_Index(d, L, R, alpha);
+    // Vam.print_graph();
 
     auto end = std::chrono::high_resolution_clock::now();
     auto duration = std::chrono::duration_cast<std::chrono::seconds>(end - start).count();
 
     std::cout << "Filtered Vamana index created in : " << duration << " seconds" << std::endl;
 
-    vector<vector<int>> groundtruth = readClosestPoints("Groundtruth.txt");
 
-    for(int point: groundtruth[0]){
-        cout << point << " ";
-    }
-    cout << endl;
-    cout << endl;
+    //vector<vector<int>> groundtruth = readClosestPoints("Groundtruth.txt");
 
     map<int, int> filter_map = v.Filtered_Find_Medoid(d.get_dataset(),d.get_filter_set(),1);
 
-    int counter = 0;
+    //printMap(filter_map);
     
     string filename_1 = "dummy-queries.bin";
 
@@ -188,29 +166,93 @@ int main(int argc, char*argv[]){
     q.set_filepath(filename_1);
     q.read_Query_set();
 
-
-    LVPair res = v.FilteredGreedySearch(Vam, filter_map, 0, k, L, d.get_filter_set(), d.get_dataset(), q.get_dataset());
-
-
-
-    for(int point: res.first){
-        cout << point << " ";
-    }
-    // cout << endl;
-    //     double recall = v.Get_Recall(vec, res.first);
-    //     cout << "vector " << counter << ":" << "recall = " << recall << endl;
-
-    //     counter++;
+    // // vector<Data_Point> queries;
+    // // vector<int> index;
+    // int counter = 0;
+    // for(Data_Point point: q.get_dataset()){
+    //     if(point.timestamp == 1){
+    //         counter++;
+    //     }
     // }
+    vector<int> counters(128,0);
+    for(int j = 0; j < 128; j++){
+        for(int i = 0; i < d.get_dataset().size(); i++){
+            if(d.get_data_point(i).categorical == j){
+                counters[j]++;
+            }
+        }
+        
+    }
+
+    for(int i = 0; i <counters.size(); i++){
+        cout << "filter : " << i << counters[i] << endl;
+    }
     
+    //cout << counter << endl;
 
-    // cout << endl << "TYPE : "<<q.get_data_point(0).timestamp << endl;
-    // cout << endl << "CATEGORICAL  : "<<q.get_data_point(0).categorical << endl;
+    //vector<vector<int>> knns = ReadKNN("output.bin");
 
 
+    // for(vector<uint32_t> vec: knns){
+        
+    // }
+    // //for(vector<uint32_t> vec : knns){
+    //     for(uint32_t elemement: knns[0]){
+    //         cout << elemement << " ";
+    //     }
+    //     cout << endl << endl;
+    // //}
+    // int counter=0;
+
+    // for(int i = 0; i < d.get_dataset().size(); i++){
+    //     if( d.get_data_point(i).categorical == 5){
+    //         counter++;
+    //     }
+    //     // //cout << i << endl;
+    //     //     LVPair res = v.FilteredGreedySearch(Vam, filter_map, i, k, L, d.get_filter_set(), d.get_dataset(), q.get_dataset());
+
+    //     //     // cout << "GREEDY SEARCH RESULT:\n";
+    //     //     // for(int point: res.first){
+    //     //     //     cout << point << " ";
+    //     //     // }
+    //     //     // cout << endl;
+    //     //     // cout << endl;
+    //     //     //cout << "recall = " << v.Get_Recall(knns[i], res.first) << endl; 
+
+    //     // //}
+    // }
+
+    // cout << counter << endl;
 
     return 0;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -295,3 +337,4 @@ int main(int argc, char*argv[]){
 
 //     return 0;
 // }
+

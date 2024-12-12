@@ -41,6 +41,10 @@ class RRGraph{
         template <typename Type>
         void create_Rregular_graph(std::vector<std::vector<Type> > dataset);
         void create_Rregular_empty_graph(std::vector<Data_Point> dataset);
+
+        void write_to_binary_file(const std::string& filename);
+        void read_from_binary_file(const std::string& filename);
+        
 };
 
 typedef std::vector<RRGraph> GraphCollection; //new, might change
