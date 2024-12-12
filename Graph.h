@@ -5,6 +5,8 @@
 #include <iostream>
 #include <vector>
 
+#include "filtered_dataset.h"
+
 //this class represents an R-regular graph in adjacency list representation,
 //where the adjacency list is a vector of a struct Node * object, this Node struct object
 //contains the node ID and a vectors of the neighbors/outgoing edges of that node. 
@@ -38,6 +40,7 @@ class RRGraph{
         
         template <typename Type>
         void create_Rregular_graph(std::vector<std::vector<Type> > dataset);
+        void create_Rregular_empty_graph(std::vector<Data_Point> dataset);
         RRGraph stitch_graphs(std::vector<std::vector<int, RRGraph>> G){
 };
 
