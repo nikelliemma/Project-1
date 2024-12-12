@@ -46,7 +46,7 @@ class Vamana{
         template <typename type>
         RRGraph Vamana_Index(std::vector<std::vector<type> > dataset, int L, int R, float a);
         template <typename type>
-        RRGraph StitchedVamana(std::vector<std::vector<type> > dataset, int Lsmall, int Rsmall, int Rstitched, float a);
+        GraphCollection StitchedVamana(std::vector<std::vector<type>> dataset, std::unordered_set<int> filters, int Lsmall, int Rsmall, int Rstitched, float a);
         template <typename type>
         void RobustPruning(RRGraph graph, int query, std::unordered_set<int> V_set, float a, int R, std::vector<std::vector<type> > dataset);
         template <typename type>

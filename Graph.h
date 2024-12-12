@@ -41,7 +41,7 @@ class RRGraph{
         template <typename Type>
         void create_Rregular_graph(std::vector<std::vector<Type> > dataset);
         void create_Rregular_empty_graph(std::vector<Data_Point> dataset);
-        RRGraph stitch_graphs(std::vector<std::vector<int, RRGraph>> G){
+        RRGraph stitch_graph(std::vector<std::vector<int, RRGraph>> G);
 };
 
 
