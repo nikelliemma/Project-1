@@ -11,6 +11,8 @@
 
 typedef std::pair<std::vector<int>, std::unordered_set<int> > LVPair;
 
+typedef std::vector<std::vector<int, RRGraph>> GraphCollection; //new, might change
+
 class Vamana{
 
     private:

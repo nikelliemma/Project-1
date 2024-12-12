@@ -35,10 +35,10 @@ class RRGraph{
         int get_nodes_num();
         void set_nodes_num(int num);
         std::vector<Node *> get_graph();
-
+        
         template <typename Type>
         void create_Rregular_graph(std::vector<std::vector<Type> > dataset);
-        
+        RRGraph stitch_graphs(std::vector<std::vector<int, RRGraph>> G){
 };
 
 

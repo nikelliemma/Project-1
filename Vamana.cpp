@@ -492,32 +492,55 @@ RRGraph Vamana::Vamana_Index(std::vector<std::vector<type> > dataset, int L, int
 }
 
 template <typename type>
-RRGraph Vamana::StitchedVamana(std::vector<std::vector<type>> dataset, std::unordered_set<int> filters, int Lsmall, int Rsmall, int Rstitched, float a){
-    
-    std::vector<std::vector<type>> points;
+GraphCollection Vamana::StitchedVamana(std::vector<std::vector<type>> dataset, std::unordered_set<int> filters, int Lsmall, int Rsmall, int Rstitched, float a){
+
+    GraphCollection collectionOfGraphs;
+    std::vector<std::vector<std::vector<type>>> PointsByFilter;
     int flag = 0;
-    std::vector<
-    
-    //create sets of points for each filter and run vamana for each
-    for(int f : filters){
 
-        points.clear();
-
-        for(int i : dataset[i]){
+    //create vector of points for each filter
+    for(int f : filters.size()){
+        for(int i = 0; i < dataset.size(); i++){
             if(dataset[i].filter == f){
-                points.push_back(i);
+                PointsByFilter[f].push_back(dataset[i]);
             }else if(dataset[i].filter == -1){
-                points.push_back(i);
-                flag = 1;
+                PointsByFilter[f].push_back(dataset[i]);
+                flag++;
             }
         }
-
-        //call vamana for each set and create seperate graphs
     }
 
+    //create subgraphs with vamana for each filter
+    if(flag){
+        int R = Rsmall;
+    }esle{
+        int R = Rstitched;
+    }
+
+    for(int f : filters.size()){
+        RRGraph subGraph = Vamana::Vamana_Index(PointsByFilter[f], Lsmall, R, a);
+        collectionOfGraphs.push_back(f, subGraph);
+    } 
+
+
+    if(flag){
+        RRGraph stitchedGraph = RRGraph::create_Rregular_empty_graph(dataset);
+        stitchedGraph = stitch_graph();
+        collectionOfGraphs.clear();
+
+        for (int q = 0; q < dataset.size(); q++) {
+            FilteredRobustPruning(smallG, q, stitchedGraph.get_node(dataset[q])->neigbors, alpha, Rstitched, dataset);
+        }
+        collectionOfGraphs.push_back(0,stitchedGraph);
+    }
+
+    return collectionOfGraphs;
 
 }
 
+RRGraph RRGraph::stitch_graph(std::vector<std::vector<int, RRGraph>> G){
+
+}
 
 //function to get the recall 
 double Vamana::Get_Recall(std::vector<int> vec1, std::vector<int> vec2){
