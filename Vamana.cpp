@@ -9,10 +9,12 @@
 #include <map>
 #include <set>
 #include <unordered_map>
+#include <future>
 
 #include "Vamana.h"
 #include "Graph.h"
 #include "dataset.h"
+#include "filtered_dataset.h"
 
 
 
@@ -84,6 +86,23 @@ double Vamana::euclidean_distance(const std::vector<type>& vec1, const std::vect
     return std::sqrt(dist);
 }
 
+double euclidean_distance(std::vector<float>& vec1, std::vector<float>& vec2){
+
+    if(vec1.size() != vec2.size()){
+        throw std::invalid_argument("Vectors must be of the same length.");
+    }
+
+    double dist = 0.0;
+    for(int i = 0; i < vec1.size(); ++i){
+
+        double diff = vec1[i] - vec2[i];
+        dist += diff * diff;
+
+    }
+
+    return std::sqrt(dist);
+}
+
 
 
 //templated function to find the medoid of the given dataset of vectors
@@ -102,6 +121,33 @@ int Vamana::find_medoid(std::vector<std::vector<type> > dataset){
         for(int j = 0; j < n; ++j){
             if(i != j){
                 total_distance += euclidean_distance(dataset[i], dataset[j]);
+            }
+        }
+        
+        if(total_distance < min_total_distance){
+            min_total_distance = total_distance;
+            medoid_index = i;
+        }
+    }
+    
+    return medoid_index;    
+}
+
+
+int Vamana::find_medoid_f(std::vector<Data_Point> dataset){
+
+    int n = dataset.size();
+    int d = dataset[0].data_vector.size();
+    int medoid_index = -1;
+    double min_total_distance = std::numeric_limits<double>::max();
+    
+    for(int i = 0; i < n; ++i){
+
+        double total_distance = 0.0;
+        
+        for(int j = 0; j < n; ++j){
+            if(i != j){
+                total_distance += euclidean_distance(dataset[i].data_vector, dataset[j].data_vector);
             }
         }
         
@@ -229,6 +275,7 @@ LVPair Vamana::GreedySearch(RRGraph graph, int starting_node, std::vector<type> 
         //get the minimum distance of the nodes in L set that have node been visited
         auto min_heap_copy = min_heap;
         int temp_node;
+
         while(!min_heap_copy.empty()){
 
             temp_node = min_heap_copy.top().second;
@@ -280,6 +327,190 @@ LVPair Vamana::GreedySearch(RRGraph graph, int starting_node, std::vector<type> 
 }
 
 
+LVPair Vamana::FilteredGreedySearch(RRGraph graph, std::map<int, int> S_nodes, int query_vec, int k, int L, std::unordered_set<int> filters, std::vector<Data_Point> dataset){
+//LVPair Vamana::FilteredGreedySearch(RRGraph graph, int starting_node, int query_vec, int k, int L, std::unordered_set<int> filters, std::vector<Data_Point> dataset){
+    //result vector contains the NNs of the query
+    //visited set contains the visited nodes 
+    std::priority_queue<std::pair<double, int>, std::vector<std::pair<double, int>>, std::greater<std::pair<double, int>>> min_heap;
+    std::unordered_set<int> visited;
+    std::vector<int> result;
+    std::unordered_set<int> min_heap_nodes;
+
+    for(const auto & [filter, node]: S_nodes){
+        //if(filter == dataset[query_vec].categorical || filter == -1){
+        if(filter == dataset[query_vec].categorical){
+            min_heap.emplace(euclidean_distance(dataset[node].data_vector, dataset[query_vec].data_vector), node);   
+        }
+    }
+    // if(dataset[starting_node].categorical == dataset[query_vec].categorical || dataset[starting_node].categorical == -1 || dataset[query_vec].categorical == -1){
+    //     min_heap.emplace(euclidean_distance(dataset[starting_node].data_vector, dataset[query_vec].data_vector), starting_node);
+    // }
+
+    //start the greedy search loop
+    while(has_unvisited_elements(min_heap, visited)){
+
+        //get the minimum distance of the nodes in L set that have node been visited
+        auto min_heap_copy = min_heap;
+        int temp_node;
+
+        while(!min_heap_copy.empty()){
+
+            temp_node = min_heap_copy.top().second;
+            if(visited.find(temp_node) != visited.end()){
+                min_heap_copy.pop();
+            }
+            else{ break; }
+        }
+
+        int min_idx = temp_node;
+
+        //update the visited set of visited nodes
+        visited.insert(min_idx);
+
+        std::vector<int> new_neighbours;
+       
+        //insert the neighbors of the min distance node to the query into the result (L) set
+        for(int node: graph.get_node(min_idx)->neighbors){
+
+            Data_Point point = dataset[node];
+
+            //if(point.categorical == dataset[min_idx].categorical || point.categorical == -1){
+            if(point.categorical == dataset[min_idx].categorical){
+                if(visited.find(node) == visited.end()){
+                    new_neighbours.push_back(node);
+                }
+            }
+
+        }
+
+        for(int node: new_neighbours){
+            if(min_heap_nodes.find(node) == min_heap_nodes.end()){ 
+                double distance = euclidean_distance(dataset[node].data_vector, dataset[query_vec].data_vector);
+                min_heap.emplace(distance, node);
+                min_heap_nodes.emplace(node);
+            }
+        }
+
+        //retain the L closest points to the query
+        if(min_heap.size() > L){
+            auto min_heap_copy = min_heap;
+            min_heap = {};
+            for(int i = 0; i < L; i++){
+                min_heap.emplace(min_heap_copy.top());
+                min_heap_copy.pop();
+            }    
+        }
+
+    }
+
+    //if(min_heap.size() == 0) return {result, visited};
+
+    //get the k nearest neighbors
+    int i = 0;
+    while(i < k){
+        result.push_back(min_heap.top().second);
+        min_heap.pop();
+        i++;
+    }
+    
+    //return the k-NNs and the visited nodes set
+    return {result, visited};
+    
+}
+
+
+
+LVPair Vamana::FilteredGreedySearch(RRGraph graph, std::map<int, int> S_nodes, int query_vec, int k, int L, std::unordered_set<int> filters, std::vector<Data_Point> dataset, std::vector<Data_Point> Q_dataset){
+    //result vector contains the NNs of the query
+    //visited set contains the visited nodes 
+    std::priority_queue<std::pair<double, int>, std::vector<std::pair<double, int>>, std::greater<std::pair<double, int>>> min_heap;
+    std::unordered_set<int> visited;
+    std::vector<int> result;
+    std::unordered_set<int> min_heap_nodes;
+
+    for(const auto & [filter, node]: S_nodes){
+        if(filter == Q_dataset[query_vec].categorical || Q_dataset[query_vec].categorical == -1){
+        //if(filter == Q_dataset[query_vec].categorical){
+            min_heap.emplace(euclidean_distance(dataset[node].data_vector, Q_dataset[query_vec].data_vector), node);   
+        }
+    }
+
+    //start the greedy search loop
+    while(has_unvisited_elements(min_heap, visited)){
+
+        //get the minimum distance of the nodes in L set that have node been visited
+        auto min_heap_copy = min_heap;
+        int temp_node;
+
+        while(!min_heap_copy.empty()){
+
+            temp_node = min_heap_copy.top().second;
+            if(visited.find(temp_node) != visited.end()){
+                min_heap_copy.pop();
+            }
+            else{ break; }
+        }
+
+        int min_idx = temp_node;
+
+        //update the visited set of visited nodes
+        visited.insert(min_idx);
+
+        std::vector<int> new_neighbours;
+       
+        //insert the neighbors of the min distance node to the query into the result (L) set
+        for(int node: graph.get_node(min_idx)->neighbors){
+
+            Data_Point point = dataset[node];
+
+            if(point.categorical == dataset[min_idx].categorical || point.categorical == -1){
+            //if(point.categorical == dataset[min_idx].categorical){
+                if(visited.find(node) == visited.end()){
+                    new_neighbours.push_back(node);
+                }
+            }
+
+        }
+
+        for(int node: new_neighbours){
+            if(min_heap_nodes.find(node) == min_heap_nodes.end()){
+                double distance = euclidean_distance(dataset[node].data_vector, dataset[query_vec].data_vector);
+                min_heap.emplace(distance, node);
+                min_heap_nodes.emplace(node);
+            }
+        }
+
+        //retain the L closest points to the query
+        if(min_heap.size() > L){
+            auto min_heap_copy = min_heap;
+            min_heap = {};
+            for(int i = 0; i < L; i++){
+                min_heap.emplace(min_heap_copy.top());
+                min_heap_copy.pop();
+            }    
+        }
+
+    }
+
+    //if(min_heap.size() == 0) return {result, visited};
+
+    //get the k nearest neighbors
+    int i = 0;
+    while(i < k){
+        result.push_back(min_heap.top().second);
+        min_heap.pop();
+        i++;
+    }
+    
+    //return the k-NNs and the visited nodes set
+    return {result, visited};
+    
+}
+
+
+
+
+
 //function that generates a random permutation from 0 to n-1
 std::vector<int> get_random_permutation(int n){
 
@@ -300,6 +531,73 @@ std::vector<int> get_random_permutation(int n){
 
 }
 
+
+std::vector<int> get_ids(std::vector<Data_Point> dataset, int filter){
+
+    std::vector<int> P_set;
+
+    int size = dataset.size();
+
+    for(int i = 0; i<size ;i++){
+        int fil = dataset[i].categorical;
+
+        if( fil == -1 || fil == filter ){
+            P_set.push_back(i);
+        }
+
+    }
+    
+    return P_set;
+}
+
+std::vector<int> select_random_elements(const std::vector<int> original, int t){
+
+    if(t > original.size()){
+        throw std::invalid_argument("t cannot be greater than the size of the original vector.");
+    }
+
+    std::vector<int> shuffled = original;
+    std::random_device rd; // Obtain a random number generator
+    std::mt19937 gen(rd()); // Seed the generator
+    std::shuffle(shuffled.begin(), shuffled.end(), gen);
+
+    return std::vector<int>(shuffled.begin(), shuffled.begin() + t);
+
+}
+
+//threshold panta iso me 1 take into account unfiltered vectors which means they have all filters 
+std::map<int, int> Vamana::Filtered_Find_Medoid(std::vector<Data_Point> dataset, std::unordered_set<int> filters, int threshold){
+
+    std::map<int, int> M_map;
+    std::map<int, int> T_map;
+    
+    int counter = 0;
+    for(Data_Point point: dataset){
+        T_map[counter] = 0;
+        counter++;
+    }
+
+    for( const int &filter: filters ){
+
+        std::vector<int> F_ids = get_ids(dataset, filter);
+        std::vector<int> random_points = select_random_elements(F_ids, threshold);
+
+        int min = std::numeric_limits<int>::max();
+        int min_point = 0;
+
+        for(int point: random_points){
+            if(T_map[point] < min) {
+                min = T_map[point];
+                min_point = point;;
+            }
+        }
+
+        M_map[filter] = min_point;
+        T_map[min] = T_map[min] + 1; 
+    }
+
+    return M_map;
+}
 
 //robust pruning algorithm
 template <typename type>
@@ -350,14 +648,15 @@ void Vamana::RobustPruning(RRGraph G, int q, std::unordered_set<int> V, float a,
 
     //update new neighboors
     G.get_node(q)->neighbors = std::move(out);
-        
+
 }
 
 
-
 // filtered robust pruning algorithm
-template <typename type>
-void Vamana::FilteredRobustPruning(RRGraph G, int q, std::unordered_set<int> V, float a, int R, std::vector<std::vector<type>> dataset){
+void Vamana::FilteredRobustPruning(RRGraph G, int q, std::unordered_set<int> V, float a, int R, FilteredDataset f_dataset){
+
+    std::vector<Data_Point> dataset = f_dataset.get_dataset();
+
     std::vector<int> out = G.get_node(q)->neighbors;
     V.insert(out.begin(), out.end());
     V.erase(q);
@@ -367,7 +666,7 @@ void Vamana::FilteredRobustPruning(RRGraph G, int q, std::unordered_set<int> V, 
     std::priority_queue<std::pair<double, int>> minHeap{};
 
     for(int node : V){
-        minHeap.emplace(-1 * euclidean_distance(dataset[q], dataset[node]), node);//* (-1) to make it min from max
+        minHeap.emplace(-1 * euclidean_distance(dataset[q].data_vector, dataset[node].data_vector), node);//* (-1) to make it min from max
     }
 
     while(!V.empty()){
@@ -406,9 +705,9 @@ void Vamana::FilteredRobustPruning(RRGraph G, int q, std::unordered_set<int> V, 
                     }
                 }
             }
-            //just a test
-            double dis1 = euclidean_distance(dataset[minNode], dataset[node]);
-            double dis2 = euclidean_distance(dataset[q], dataset[node]);
+    
+            double dis1 = euclidean_distance(dataset[minNode].data_vector, dataset[node].data_vector);
+            double dis2 = euclidean_distance(dataset[q].data_vector, dataset[node].data_vector);
 
             if((a * dis1) <= dis2){
                 V.erase(node);
@@ -416,7 +715,7 @@ void Vamana::FilteredRobustPruning(RRGraph G, int q, std::unordered_set<int> V, 
                 //remake heap for updated V
                 minHeap = {};
                 for(int i : V){
-                    minHeap.emplace(-1 * euclidean_distance(dataset[q], dataset[i]), i);
+                    minHeap.emplace(-1 * euclidean_distance(dataset[q].data_vector, dataset[i].data_vector), i);
                 }
             }
         }
@@ -425,8 +724,72 @@ void Vamana::FilteredRobustPruning(RRGraph G, int q, std::unordered_set<int> V, 
 
     //update new neighboors
     G.get_node(q)->neighbors = std::move(out);
-        
 }
+
+
+RRGraph Vamana::Filtered_Vamana_Index(FilteredDataset dataset_obj, int L, int R, float a){
+
+    std::unordered_set<int> filters_set = dataset_obj.get_filter_set();
+    std::vector<Data_Point> dataset = dataset_obj.get_dataset();
+
+    
+    //create an empty graph
+    RRGraph graph(R);
+    graph.create_Rregular_empty_graph(dataset);
+
+    //get the size of the dataset()
+    int N = dataset.size();
+
+    //get the random permutation as a starting 
+    std::vector<int> perm = std::move(get_random_permutation(N)); 
+
+    std::map<int, int> filter_map = Filtered_Find_Medoid(dataset, filters_set, 1);
+
+    std::vector<int> visited;
+
+    for(int i = 0; i<N; i++){
+
+        cout << i << endl;
+
+        // int starting_filter =  dataset[perm[i]].categorical;
+
+        // int starting_node = filter_map[starting_filter];
+
+        LVPair greedy_result = FilteredGreedySearch(graph, filter_map, perm[i], 0, L, filters_set, dataset);
+
+        visited.insert(visited.end(), greedy_result.second.begin(), greedy_result.second.end());
+
+        //run filtered robust prune
+        FilteredRobustPruning(graph, perm[i], greedy_result.second, a, R, dataset_obj);
+
+        //get the neighbors of perm[i]
+        std::vector<int> perm_i_neighbours = graph.get_node(perm[i])->neighbors;
+
+        for(int j: perm_i_neighbours){
+            
+            (graph.get_node(j)->neighbors).push_back(perm[i]);
+
+            int n = graph.get_node(j)->neighbors.size();
+
+            std::unordered_set<int> N_out_j(graph.get_node(j)->neighbors.begin(), graph.get_node(j)->neighbors.end());
+
+            if(n > R){
+                //run filtered robust prune
+                FilteredRobustPruning(graph, j, N_out_j, a, R, dataset_obj);
+            }
+
+        }
+
+    }
+
+    for(int i = 0;i<graph.get_nodes_num();i++){
+        if(graph.get_node(i)->neighbors.size() > R) graph.get_node(i)->neighbors.resize(R);
+    }
+
+    return graph;
+
+}
+
 
 
 template <typename type>
@@ -492,30 +855,10 @@ RRGraph Vamana::Vamana_Index(std::vector<std::vector<type> > dataset, int L, int
 }
 
 template <typename type>
-RRGraph Vamana::StitchedVamana(std::vector<std::vector<type>> dataset, std::unordered_set<int> filters, int Lsmall, int Rsmall, int Rstitched, float a){
-    
-    std::vector<std::vector<type>> points;
-    int flag = 0;
-    std::vector<
-    
-    //create sets of points for each filter and run vamana for each
-    for(int f : filters){
+RRGraph Vamana::StitchedVamana(std::vector<std::vector<type> > dataset, int Lsmall, int Rsmall, int Rstitched, float a){
+    //G emty graph
 
-        points.clear();
-
-        for(int i : dataset[i]){
-            if(dataset[i].filter == f){
-                points.push_back(i);
-            }else if(dataset[i].filter == -1){
-                points.push_back(i);
-                flag = 1;
-            }
-        }
-
-        //call vamana for each set and create seperate graphs
-    }
-
-
+    //get 
 }
 
 
@@ -540,6 +883,12 @@ double Vamana::Get_Recall(std::vector<int> vec1, std::vector<int> vec2){
     return (count * 100) / vec1.size();
 
 }
+
+
+
+
+
+
 
 std::string extract_format(std::string &file){
 
@@ -625,121 +974,3 @@ template LVPair Vamana::GreedySearch<unsigned char>(RRGraph graph, int starting_
 template LVPair Vamana::GreedySearch<unsigned char>(RRGraph graph, int starting_node, std::vector<unsigned char> q_vec, int k, int L, std::vector<std::vector<unsigned char> > dataset);
 template int Vamana::find_medoid<unsigned char>(std::vector<std::vector<unsigned char> > dataset);
 template RRGraph Vamana::Vamana_Index<unsigned char>(std::vector<std::vector<unsigned char> > dataset, int L, int R, float a);
-
-
-
-
-
-
-
-// template <typename type>
-// void Vamana::RobustPruning(RRGraph graph, int query, std::unordered_set<int> V_set, float alpha, int R, std::vector<std::vector<type> > dataset){
-
-//     std::vector<int> N_out = graph.get_node(query)->neighbors;
-//     V_set.insert(N_out.begin(), N_out.end());
-//     V_set.erase(query);
-
-//     N_out.clear();
-
-//     //use of a min heap to efficiently store and sort the nodes by euclidian distance
-//     std::priority_queue<std::pair<double, int>, std::vector<std::pair<double, int>>, std::greater<std::pair<double, int>>> min_heap;
-
-//     while(!V_set.empty()){
-
-//         min_heap = {};
-
-//         //find the minimum distance node that belongs in the V_set
-//         for(int node : V_set){
-//             double dis = euclidean_distance(dataset[query], dataset[node]);
-//             min_heap.emplace(dis, node);
-//         }
-
-//         int min_idx = min_heap.top().second;
-
-//         //if it's not in the neigbors vector add it
-//         if(std::find(N_out.begin(), N_out.end(), min_idx) == N_out.end()){
-//             // if(V_set.find(min_idx) != V_set.end()){
-//             //     N_out.push_back(min_idx);
-//             // }
-//             N_out.push_back(min_idx);
-//         }
-
-//         if(N_out.size() == R) break;
-
-//         std::unordered_set<int> temp_set = V_set;
-//         for(int node: temp_set){
-
-//             double dis_1 = euclidean_distance(dataset[min_idx], dataset[node]);
-//             double dis_2 = euclidean_distance(dataset[query], dataset[node]);
-
-//             if(alpha * dis_1 <= dis_2){
-//                 V_set.erase(node);
-//             }
-//         }
-
-//     }
-
-//     //update the real graph neighbors with the new N_out neighbors   
-//     graph.get_node(query)->neighbors = std::move(N_out);
-
-//     return;
-// }
-
-
-
-// auto find_in_vector(std::vector<std::pair<int, double>>& distances, int node){
-//     auto it = std::find_if(distances.begin(), distances.end(), [node](const std::pair<int, double>& p) {
-//         return p.first == node; // Check if the node matches
-//     });
-//     return it;
-// }
-
-// template <typename type>
-// void Vamana::RobustPruning(RRGraph graph, int query, std::unordered_set<int> V_set, float alpha, int R, std::vector<std::vector<type> > dataset){
-
-//     std::vector<int> N_out = graph.get_node(query)->neighbors;
-//     V_set.insert(N_out.begin(), N_out.end());
-//     V_set.erase(query);
-
-//     std::vector<std::pair<int, double>> visited_nodes;
-
-//     for(int node : V_set){
-//         double dis = euclidean_distance(dataset[query], dataset[node]);
-//         visited_nodes.emplace_back(node, dis);
-//     }
-
-//     std::sort(visited_nodes.begin(), visited_nodes.end(), [](const std::pair<int, double>& a, const std::pair<int, double>& b){
-//         return a.second < b.second; 
-//     });
-
-//     N_out.clear();
-
-//     while(!visited_nodes.empty()){
-
-//         int min_idx = visited_nodes[0].first;
-
-//         if(std::find(N_out.begin(), N_out.end(), min_idx) == N_out.end()){
-//             N_out.push_back(min_idx);
-//         }
-
-//         if(N_out.size() == R) break;
-
-//         std::unordered_set<int> temp_set = V_set;
-//         for(int node: temp_set){
-
-//             double dis_1 = euclidean_distance(dataset[min_idx], dataset[node]);
-//             auto it = find_in_vector(visited_nodes, node);
-//             double dis_2 = it->second;
-
-//             if(alpha * dis_1 <= dis_2){
-//                 visited_nodes.erase(it);
-//             }
-//         }
-//     }
-
-//     //update the real graph neighbors with the new N_out neighbors 
-//     graph.get_node(query)->neighbors = N_out;
-
-//     return;
-// }
-
