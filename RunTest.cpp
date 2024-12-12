@@ -114,8 +114,7 @@ int main(int argc, char*argv[]){
         cout << "out of stitched" << endl;
 
         for(int i = 0; i < collectionOfGraphs.size(); i++){
-            cout << "im here " << i << endl;
-            collectionOfGraphs[i].print_graph();
+            //collectionOfGraphs[i].print_graph();
         }
 
     }

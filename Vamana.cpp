@@ -799,8 +799,6 @@ RRGraph Vamana::Vamana_Index(std::vector<std::vector<type> > dataset, int L, int
     RRGraph graph(R);
     graph.create_Rregular_graph(dataset);
 
-    cout << "DNDYMGMJSMJSTNHTRSN\n";
-
     //get the size of the dataset()
     int N = dataset.size();
 
@@ -878,7 +876,6 @@ GraphCollection Vamana::StitchedVamana(FilteredDataset dataset_obj, int Lsmall, 
         for(int i = 0; i < size; i++){
 
             if(dataset_obj.get_data_point(i).categorical == f){
-                //cout << "im here again " << endl;
                 PointsByFilter.push_back(dataset_obj.get_data_point(i).data_vector);
             }
         }
@@ -892,7 +889,7 @@ GraphCollection Vamana::StitchedVamana(FilteredDataset dataset_obj, int Lsmall, 
         }
         
         subGraph = Vamana_Index(PointsByFilter, Lsmall, Rstitched, a);
-        cout << "back from vam" << f << endl;
+
         collectionOfGraphs.push_back(subGraph);
         
         cout << "graph count = " << f << endl;
