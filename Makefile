@@ -1,6 +1,6 @@
 
 # Define variables for object files, source files, headers, output executable, compiler, and flags
-SOURCE_PROJECT  = test_vam.cpp Vamana.cpp Graph.cpp dataset.cpp filtered_dataset.cpp
+SOURCE_PROJECT  = RunTest.cpp Vamana.cpp Graph.cpp dataset.cpp filtered_dataset.cpp
 SOURCE_TEST     = filtered_dataset.cpp dataset.cpp Graph.cpp Vamana.cpp unit_testing.cpp 
 HEADER          = filtered_dataset.h dataset.h Graph.h Vamana.h acutest.h
 OUT_PROJECT     = test_vam

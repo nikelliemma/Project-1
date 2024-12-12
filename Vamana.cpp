@@ -854,54 +854,43 @@ RRGraph Vamana::Vamana_Index(std::vector<std::vector<type> > dataset, int L, int
 
 }
 
-template <typename type>
-GraphCollection Vamana::StitchedVamana(std::vector<std::vector<type>> dataset, std::unordered_set<int> filters, int Lsmall, int Rsmall, int Rstitched, float a){
-
+GraphCollection Vamana::StitchedVamana(FilteredDataset dataset_obj, int Lsmall, int Rsmall, int Rstitched, int a){
+    
     GraphCollection collectionOfGraphs;
-    std::vector<std::vector<std::vector<type>>> PointsByFilter;
-    int flag = 0;
+    std::vector<std::vector<std::vector<float>>> PointsByFilter;
 
-    //create vector of points for each filter
-    for(int f : filters.size()){
-        for(int i = 0; i < dataset.size(); i++){
-            if(dataset[i].filter == f){
-                PointsByFilter[f].push_back(dataset[i]);
-            }else if(dataset[i].filter == -1){
-                PointsByFilter[f].push_back(dataset[i]);
-                flag++;
+    std::unordered_set<int> filters = dataset_obj.get_filter_set();
+
+    cout << "Seperating points" << endl;
+
+    //seperate points by filter and create subgraphs for each
+    for(int f = 0; f < filters.size(); f++){
+        //create vector of points for each filter
+        cout << "creating vectors for points" << endl;
+        int size = dataset_obj.get_dataset().size();
+        cout << "yup" << endl;
+        for(int i = 0; i < size; i++){
+            cout << "im here " << i << endl;
+            if(dataset_obj.get_data_point(i).categorical == f){
+                cout << "im here again " << endl;
+                PointsByFilter[f].push_back(dataset_obj.get_data_point(i).data_vector);
             }
         }
+        cout << "creating sybgraphs" << endl;
+        //create subgraphs with vamana for each filter
+        //since there is no stitching, we run vamana with Rstitched instead of Rsmall
+        RRGraph subGraph = Vamana_Index(PointsByFilter[f], Lsmall, Rstitched, a);
+        collectionOfGraphs.push_back(subGraph);
     }
-
-    //create subgraphs with vamana for each filter
-    if(flag){
-        int R = Rsmall;
-    }esle{
-        int R = Rstitched;
-    }
-
-    for(int f : filters.size()){
-        RRGraph subGraph = Vamana::Vamana_Index(PointsByFilter[f], Lsmall, R, a);
-        collectionOfGraphs.push_back(f, subGraph);
-    } 
-
-
-    if(flag){
-        RRGraph stitchedGraph = RRGraph::create_Rregular_empty_graph(dataset);
-        stitchedGraph = stitch_graph();
-        collectionOfGraphs.clear();
-
-        for (int q = 0; q < dataset.size(); q++) {
-            FilteredRobustPruning(smallG, q, stitchedGraph.get_node(dataset[q])->neigbors, alpha, Rstitched, dataset);
+    /*
+    for (int g = 0; g < collectionOfGraphs.size(); g++){
+        int sizeG = collectionOfGraphs[g].get_graph().size();
+        for(int q = 0; q < sizeG; q++){
+            FilteredRobustPruning(collectionOfGraphs[g], q, collectionOfGraphs[g].get_node(dataset[q])->neigbors, a, Rstitched, dataset);
         }
-        collectionOfGraphs.push_back(0,stitchedGraph);
     }
-
+    */
     return collectionOfGraphs;
-
-}
-
-RRGraph RRGraph::stitch_graph(std::vector<std::vector<int, RRGraph>> G){
 
 }
 
