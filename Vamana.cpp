@@ -978,18 +978,13 @@ GraphCollection Vamana::StitchedVamana(FilteredDataset dataset_obj, int Lsmall, 
         //create subgraphs with vamana for each filter
         //since there is no stitching, we run vamana with Rstitched instead of Rsmall
         if(PointsByFilter.size() <= 1){
-            cout << "less than 1 at graph " << f << endl;
-            
+            //skipping 1 or less point graph cause no point?
             continue;
         }
         
         subGraph = Vamana_Index(PointsByFilter, Lsmall, Rstitched, a);
-
         collectionOfGraphs.push_back(subGraph);
-        
-        cout << "graph count = " << f << endl;
     }
-
 
     /*
     for (int g = 0; g < collectionOfGraphs.size(); g++){
