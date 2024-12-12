@@ -14,6 +14,8 @@
 
 using namespace std;
 
+void runStitched(string , int , int ,int ,int , int );
+
 
 // Function to read the file and store closest points into a vector of vectors
 std::vector<std::vector<int>> readClosestPoints(const std::string& filePath) {
@@ -176,13 +178,14 @@ int main(int argc, char *argv[]){
     }
 
 
-    
     switch(o)
     {
         case 1:
+            cout << "Running Vamana... " << endl;
             //run vamana
             break;
         case 2:
+            cout << "Running Filtered Vamana... " << endl;
             //run filtered
             break;
         case 3:
@@ -190,7 +193,8 @@ int main(int argc, char *argv[]){
                 printf("Missing argument. Terminating\n");
                 exit(1);
             }
-            //run stitched
+            cout << "Running Stitched Vamana... " << endl;
+            runStitched(filename, L, R , a, k, S);
             break;
         default:
             printf("Unknow error. Terminating\n");
@@ -198,23 +202,7 @@ int main(int argc, char *argv[]){
     }
 }
 
-
-
-/*
-int main(int argc, char*argv[]){
-
-    if(argc < 5){
-        cout << "Too few arguments!\n";
-        return 0;
-    }
-
-    int L = std::atoi(argv[1]);
-    int R = std::atoi(argv[2]);
-    int alpha = std::atoi(argv[3]);
-    int k = std::atoi(argv[4]);
-    int Rst = std::atoi(argv[5]);
-
-    string filename = "dummy-data.bin";
+void runStitched(string filename, int L, int R ,int alpha,int k, int Rst){
 
     FilteredDataset d;
     d.set_filepath(filename);
@@ -227,6 +215,9 @@ int main(int argc, char*argv[]){
     q.read_Query_set();
 
     Vamana v(R,L,alpha);
+    std::vector<std::vector<float>> unfiltered;
+    RRGraph Vam(R);
+    
     int flag = 0;
 
     auto start = std::chrono::high_resolution_clock::now();
@@ -237,29 +228,25 @@ int main(int argc, char*argv[]){
             flag++;
         }
     }
-    
 
-    std::vector<std::vector<float>> unfiltered;
-    RRGraph Vam(R);
-    
     if(flag){   //if there are unfiltered
         size = d.get_dataset().size();
         for(int i = 0; i < size; i++){
             unfiltered.push_back(d.get_data_point(i).data_vector);
         }
-        cout << "doing vamana" << endl;
+
         Vam = v.Vamana_Index(unfiltered, L, R, alpha);
-        cout << "out of vamana" << endl;
-        Vam.print_graph();
+        //cout << "Printing Vamana Graph... " << endl;
+        //Vam.print_graph();
     }
     
     if(flag < q.get_dataset().size()){ //if there are filtered
-        cout << "about to do stitched" << endl;
-        GraphCollection collectionOfGraphs = v.StitchedVamana(d, L, R, Rst, alpha);
-        cout << "out of stitched" << endl;
 
+        GraphCollection collectionOfGraphs = v.StitchedVamana(d, L, R, Rst, alpha);
+        cout << "Printing Stitched Vamana Graphs... " << endl;
         for(int i = 0; i < collectionOfGraphs.size(); i++){
-            //collectionOfGraphs[i].print_graph();
+            cout << "Graph for filter " << i << "." << endl;
+            collectionOfGraphs[i].print_graph();
         }
 
     }
@@ -269,9 +256,21 @@ int main(int argc, char*argv[]){
 
     std::cout << "Stitched Vamana index created in : " << duration << " seconds" << std::endl;
 
-   //vector<vector<int>> groundtruth = readClosestPoints("Groundtruth.txt");
+    /*
+    size = d.get_dataset().size();
+
+    for(int i = 0; i < size; i++){
+
+        if(d.get_data_point(i).categorical == -1){
+
+            LVPair res = v.GreedySearch(Vam, find_medoid(unfiltered), d.get_data_point(i).data_vector, k, L, unfiltered);
 
 
-    return 0;
+        }else{
+
+            LVPair res = v.GreedySearch(collectionOfGraphs(d.get_data_point(i).categorical), find_medoid(unfiltered), d.get_data_point(i).data_vector, k, L, unfiltered);
+        }
+    }
+    */
 }
-*/
+

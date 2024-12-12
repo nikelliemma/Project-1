@@ -977,7 +977,7 @@ GraphCollection Vamana::StitchedVamana(FilteredDataset dataset_obj, int Lsmall, 
 
         //create subgraphs with vamana for each filter
         //since there is no stitching, we run vamana with Rstitched instead of Rsmall
-        if(PointsByFilter.size() <= 1){
+        if(PointsByFilter.size() <= Rstitched){
             //skipping 1 or less point graph cause no point?
             continue;
         }
