@@ -799,6 +799,8 @@ RRGraph Vamana::Vamana_Index(std::vector<std::vector<type> > dataset, int L, int
     RRGraph graph(R);
     graph.create_Rregular_graph(dataset);
 
+    cout << "DNDYMGMJSMJSTNHTRSN\n";
+
     //get the size of the dataset()
     int N = dataset.size();
 
@@ -854,34 +856,49 @@ RRGraph Vamana::Vamana_Index(std::vector<std::vector<type> > dataset, int L, int
 
 }
 
+
 GraphCollection Vamana::StitchedVamana(FilteredDataset dataset_obj, int Lsmall, int Rsmall, int Rstitched, int a){
     
     GraphCollection collectionOfGraphs;
-    std::vector<std::vector<std::vector<float>>> PointsByFilter;
+    std::vector<std::vector<float>> PointsByFilter;
 
     std::unordered_set<int> filters = dataset_obj.get_filter_set();
 
-    cout << "Seperating points" << endl;
+    int size = dataset_obj.get_dataset().size();
+    int fsize = filters.size();
+
+    RRGraph subGraph(Rstitched);
 
     //seperate points by filter and create subgraphs for each
-    for(int f = 0; f < filters.size(); f++){
-        //create vector of points for each filter
-        cout << "creating vectors for points" << endl;
-        int size = dataset_obj.get_dataset().size();
-        cout << "yup" << endl;
+    for(int f = 0; f < fsize; f++){
+
+        PointsByFilter.clear();
+
+        //create vector of points for each filter        
         for(int i = 0; i < size; i++){
-            cout << "im here " << i << endl;
+
             if(dataset_obj.get_data_point(i).categorical == f){
-                cout << "im here again " << endl;
-                PointsByFilter[f].push_back(dataset_obj.get_data_point(i).data_vector);
+                //cout << "im here again " << endl;
+                PointsByFilter.push_back(dataset_obj.get_data_point(i).data_vector);
             }
         }
-        cout << "creating sybgraphs" << endl;
+
         //create subgraphs with vamana for each filter
         //since there is no stitching, we run vamana with Rstitched instead of Rsmall
-        RRGraph subGraph = Vamana_Index(PointsByFilter[f], Lsmall, Rstitched, a);
+        if(PointsByFilter.size() <= 1){
+            cout << "less than 1 at graph " << f << endl;
+            
+            continue;
+        }
+        
+        subGraph = Vamana_Index(PointsByFilter, Lsmall, Rstitched, a);
+        cout << "back from vam" << f << endl;
         collectionOfGraphs.push_back(subGraph);
+        
+        cout << "graph count = " << f << endl;
     }
+
+
     /*
     for (int g = 0; g < collectionOfGraphs.size(); g++){
         int sizeG = collectionOfGraphs[g].get_graph().size();
@@ -890,8 +907,8 @@ GraphCollection Vamana::StitchedVamana(FilteredDataset dataset_obj, int Lsmall, 
         }
     }
     */
-    return collectionOfGraphs;
 
+    return collectionOfGraphs;
 }
 
 //function to get the recall 
