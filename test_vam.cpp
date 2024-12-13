@@ -4,6 +4,7 @@
 #include <fstream>
 #include <sstream>
 #include <algorithm>
+#include <unistd.h>
 #include <vector>
 
 
@@ -16,17 +17,82 @@ std::vector<std::vector<int>> readClosestPoints(const std::string& filePath);
 
 
 
-int main(int argc, char*argv[]){
 
-    if(argc < 5){
-        cout << "Too few arguments!\n";
-        return 0;
+int main(int argc, char *argv[]){
+
+    int option, k = -1, a = -1, L = -1, R = -1, o = -1, S = -1;
+    extern char *optarg;
+    extern int optopt, optind;
+
+    //GETTING ARGUMENTS FROM COMMAND LINE//
+
+    while((option = getopt(argc, argv, ":k:a:l:r:")) != -1){
+        switch (option)
+        {
+        case 'k':
+            if(k == -1){
+                if((k = atoi(optarg)) <= 0 ){
+                    printf("Malformed input\n");
+                    exit(1);
+                }
+                break;
+            }else{
+                printf("Argument duplicates. Terminating\n");
+                exit(1);
+            }
+            break;
+        case 'a':
+            if(a == -1){
+                if((a = atoi(optarg)) <= 0 ){
+                    printf("Malformed input\n");
+                    exit(1);
+                }
+                break;
+            }else{
+                printf("Argument duplicates. Terminating\n");
+                exit(1);
+            }
+        case 'l':
+            if(L == -1){
+                if((L = atoi(optarg)) <= 0 ){
+                    printf("Malformed input\n");
+                    exit(1);
+                }
+                break;
+            }else{
+                printf("Argument duplicates. Terminating\n");
+                exit(1);
+            }
+            break;
+        case 'r':
+            if(R == -1){
+                if((R = atoi(optarg)) <= 0 ){
+                    printf("Malformed input\n");
+                    exit(1);
+                }
+                break;
+            }else{
+                printf("Argument duplicates. Terminating\n");
+                exit(1);
+            }
+            break;
+        case ':':   
+            printf("Missing argument. Terminating\n");
+            exit(1);
+        case '?':
+            printf("Unkown argument. Terminating\n");
+            exit(1);
+        default:
+            printf("Unknow error\n");
+            exit(1);
+        }
     }
 
-    int L = std::atoi(argv[1]);
-    int R = std::atoi(argv[2]);
-    int alpha = std::atoi(argv[3]);
-    int k = std::atoi(argv[4]);
+    //check for excess arguments
+    for(; optind < argc ; optind++){
+        printf("Too many arguments. Terminating\n");
+        exit(1);
+    }
 
 
     string filename = "dummy-data.bin";
@@ -35,7 +101,7 @@ int main(int argc, char*argv[]){
     d.set_filepath(filename);
     d.read_Dataset();
 
-    Vamana v(R,L,alpha);
+    Vamana v(R,L,a);
 
 
     auto start = std::chrono::high_resolution_clock::now();
@@ -88,7 +154,87 @@ int main(int argc, char*argv[]){
     // cout << "average recall = " << recall_sum / 500;
     
     return 0;
+
+
 }
+
+
+
+
+
+// int main(int argc, char*argv[]){
+
+//     if(argc < 5){
+//         cout << "Too few arguments!\n";
+//         return 0;
+//     }
+
+//     int L = std::atoi(argv[1]);
+//     int R = std::atoi(argv[2]);
+//     int alpha = std::atoi(argv[3]);
+//     int k = std::atoi(argv[4]);
+
+
+//     string filename = "dummy-data.bin";
+
+//     FilteredDataset d;
+//     d.set_filepath(filename);
+//     d.read_Dataset();
+
+//     Vamana v(R,L,alpha);
+
+
+//     auto start = std::chrono::high_resolution_clock::now();
+
+//     // RRGraph Vam = v.Filtered_Vamana_Index(d, L, R, alpha);
+//     // Vam.print_graph();
+//     // Vam.set_nodes_num(d.get_dataset().size());
+//     // Vam.write_to_binary_file("vamana_index.bin");
+
+    
+//     RRGraph Vam1(R);
+//     Vam1.read_from_binary_file("vamana_index.bin");
+
+//     Vam1.print_graph();
+
+//     auto end = std::chrono::high_resolution_clock::now();
+//     auto duration = std::chrono::duration_cast<std::chrono::seconds>(end - start).count();
+
+//     std::cout << "Filtered Vamana index created in : " << duration << " seconds" << std::endl;
+
+//     vector<vector<int>> groundtruth = readClosestPoints("Groundtruth.txt");
+
+//     map<int, int> filter_map = v.Filtered_Find_Medoid(d.get_dataset(),d.get_filter_set(),1);
+    
+//     string filename_1 = "dummy-queries.bin";
+
+//     FilteredDataset q;
+//     q.set_filepath(filename_1);
+//     q.read_Query_set();
+
+//     vector<Data_Point> queries;
+//     vector<int> index;
+//     int counter = 0;
+
+//     for(Data_Point point: q.get_dataset()){
+//         if( point.timestamp == 1 || point.timestamp == 0){
+//             index.push_back(counter);
+//         }
+//         counter++;
+//     }
+
+//     // double recall_sum = 0.0;
+//     for(int i = 0; i<500;i++){
+//         LVPair res = v.FilteredGreedySearch(Vam1, filter_map, index[i], k, L, d.get_filter_set(), d.get_dataset(), q.get_dataset());
+//         double recall = v.Get_Recall(groundtruth[index[i]], res.first);
+//         if(recall >= 75) cout << "recall = " << recall  << endl; 
+//         //cout << "recall = " << recall  << endl; 
+//         // recall_sum += recall;
+//     }        
+//     // cout << "average recall = " << recall_sum / 500;
+    
+//     return 0;
+// }
 
 
 
