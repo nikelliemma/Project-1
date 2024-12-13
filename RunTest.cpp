@@ -18,50 +18,7 @@ void runStitched(string , int , int ,int ,int , int );
 void runVamana( int ,int ,int , int );
 void runFiltered( int ,int ,int , int );
 
-
-// Function to read the file and store closest points into a vector of vectors
-std::vector<std::vector<int>> readClosestPoints(const std::string& filePath) {
-    // Vector of vectors to store closest points for each query
-    std::vector<std::vector<int>> closestPoints;
-
-    // Open the file
-    std::ifstream inputFile(filePath);
-    if (!inputFile.is_open()) {
-        std::cerr << "Error: Unable to open file!" << std::endl;
-        return closestPoints; // Return empty vector
-    }
-
-    // Read the file line by line
-    std::string line;
-    while (std::getline(inputFile, line)) {
-        // Check if the line contains a query
-        if (line.find("Query") != std::string::npos) {
-            // Find the next line with closest points
-            if (std::getline(inputFile, line)) {
-                // Parse the points
-                std::istringstream ss(line);
-                std::vector<int> points;
-                std::string point;
-
-                while (std::getline(ss, point, ',')) {
-                    try {
-                        points.push_back(std::stoi(point));
-                    } catch (const std::invalid_argument& e) {
-                        //std::cerr << "Error: Invalid number format in file." << std::endl;
-                    }
-                }
-
-                // Add points to the main vector
-                closestPoints.push_back(points);
-            }
-        }
-    }
-
-    // Close the file
-    inputFile.close();
-    return closestPoints;
-}
-
+std::vector<std::vector<int>> readClosestPoints(const std::string& filePath);
 
 int main(int argc, char *argv[]){
 
@@ -206,8 +163,52 @@ int main(int argc, char *argv[]){
     }
 }
 
+
+// Function to read the file and store closest points into a vector of vectors
+std::vector<std::vector<int>> readClosestPoints(const std::string& filePath) {
+    // Vector of vectors to store closest points for each query
+    std::vector<std::vector<int>> closestPoints;
+
+    // Open the file
+    std::ifstream inputFile(filePath);
+    if (!inputFile.is_open()) {
+        std::cerr << "Error: Unable to open file!" << std::endl;
+        return closestPoints; // Return empty vector
+    }
+
+    // Read the file line by line
+    std::string line;
+    while (std::getline(inputFile, line)) {
+        // Check if the line contains a query
+        if (line.find("Query") != std::string::npos) {
+            // Find the next line with closest points
+            if (std::getline(inputFile, line)) {
+                // Parse the points
+                std::istringstream ss(line);
+                std::vector<int> points;
+                std::string point;
+
+                while (std::getline(ss, point, ',')) {
+                    try {
+                        points.push_back(std::stoi(point));
+                    } catch (const std::invalid_argument& e) {
+                        //std::cerr << "Error: Invalid number format in file." << std::endl;
+                    }
+                }
+
+                // Add points to the main vector
+                closestPoints.push_back(points);
+            }
+        }
+    }
+
+    // Close the file
+    inputFile.close();
+    return closestPoints;
+}
+
 void runFiltered(int L, int R ,int alpha,int k){
-    string filename = "dummy-data.bin";
+    string filename = "datasets/dummy-data.bin";
 
     FilteredDataset d;
     d.set_filepath(filename);
@@ -234,19 +235,19 @@ void runFiltered(int L, int R ,int alpha,int k){
 void runVamana(int L, int R ,int alpha,int k){
 
     Dataset<float> d;
-    d.set_filename("siftsmall_base.fvecs");
+    d.set_filename("datasets/siftsmall_base.fvecs");
     d.set_type(FLOAT);
     d.read_dataset();
 
 
     Dataset<int> groundtruth;
-    groundtruth.set_filename("siftsmall_groundtruth.ivecs");
+    groundtruth.set_filename("datasets/siftsmall_groundtruth.ivecs");
     groundtruth.set_type(INTEGER);
     groundtruth.read_dataset();
 
 
     Dataset<float> d1;
-    d1.set_filename("siftsmall_query.fvecs");
+    d1.set_filename("datasets/siftsmall_query.fvecs");
     d1.set_type(FLOAT);
     d1.read_dataset();
 
@@ -292,7 +293,7 @@ void runStitched(string filename, int L, int R ,int alpha,int k, int Rst){
     d.set_filepath(filename);
     d.read_Dataset();
 
-    string filename_1 = "dummy-queries.bin";
+    string filename_1 = "datasets/dummy-queries.bin";
 
     FilteredDataset q;
     q.set_filepath(filename_1);

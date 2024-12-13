@@ -95,7 +95,7 @@ int main(int argc, char *argv[]){
     }
 
 
-    string filename = "dummy-data.bin";
+    string filename = "datasets/dummy-data.bin";
 
     FilteredDataset d;
     d.set_filepath(filename);
@@ -122,11 +122,11 @@ int main(int argc, char *argv[]){
 
     std::cout << "Filtered Vamana index created in : " << duration << " seconds" << std::endl;
 
-    vector<vector<int>> groundtruth = readClosestPoints("Groundtruth.txt");
+    vector<vector<int>> groundtruth = readClosestPoints("datasets/Groundtruth.txt");
 
     map<int, int> filter_map = v.Filtered_Find_Medoid(d.get_dataset(),d.get_filter_set(),1);
     
-    string filename_1 = "dummy-queries.bin";
+    string filename_1 = "datasets/dummy-queries.bin";
 
     FilteredDataset q;
     q.set_filepath(filename_1);
