@@ -479,8 +479,8 @@ LVPair Vamana::FilteredGreedySearch(RRGraph graph, std::map<int, int> S_nodes, i
     std::unordered_set<int> min_heap_nodes;
 
     for(const auto & [filter, node]: S_nodes){
-        if(filter == Q_dataset[query_vec].categorical || Q_dataset[query_vec].categorical == -1){
-        //if(filter == Q_dataset[query_vec].categorical){
+        //if(filter == Q_dataset[query_vec].categorical || Q_dataset[query_vec].categorical == -1){
+        if(filter == Q_dataset[query_vec].categorical){
             min_heap.emplace(euclidean_distance(dataset[node].data_vector, Q_dataset[query_vec].data_vector), node);  
             min_heap_nodes.emplace(node);  
         }
@@ -514,8 +514,8 @@ LVPair Vamana::FilteredGreedySearch(RRGraph graph, std::map<int, int> S_nodes, i
 
             Data_Point point = dataset[node];
 
-            if(point.categorical == dataset[min_idx].categorical || point.categorical == -1){
-            //if(point.categorical == dataset[min_idx].categorical){
+            //if(point.categorical == dataset[min_idx].categorical || point.categorical == -1){
+            if(point.categorical == dataset[min_idx].categorical){
                 if(visited.find(node) == visited.end()){
                     new_neighbours.push_back(node);
                 }
@@ -619,57 +619,24 @@ std::vector<int> select_random_elements(const std::vector<int> original, int t){
 }
 
 
-// std::map<int, int> Vamana::Filtered_Find_Medoid(std::vector<Data_Point> dataset, std::unordered_set<int> filters, int threshold){
-
-//     std::map<int, int> M_map;
-//     std::map<int, int> T_map;
-    
-//     int counter = 0;
-//     for(Data_Point point: dataset){
-//         T_map[counter] = 0;
-//         counter++;
-//     }
-
-//     for( const int &filter: filters ){
-
-//         std::vector<int> F_ids = get_ids(dataset, filter);
-//         std::vector<int> random_points = select_random_elements(F_ids, threshold);
-
-//         int min = std::numeric_limits<int>::max();
-//         int min_point = 0;
-
-//         for(int point: random_points){
-//             if(T_map[point] < min) {
-//                 min = T_map[point];
-//                 min_point = point;;
-//             }
-//         }
-
-//         M_map[filter] = min_point;
-//         T_map[min] = T_map[min] + 1; 
-//     }
-
-//     return M_map;
-// }
 
 std::map<int, int> Vamana::Filtered_Find_Medoid(std::vector<Data_Point> dataset, std::unordered_set<int> filters, int threshold) {
-    std::map<int, int> M_map; // Maps filters to medoids
-    std::map<int, int> T_map; // Tracks usage counts for each point
+    std::map<int, int> M_map; 
+    std::map<int, int> T_map; 
 
-    // Initialize T_map with zero counts for all data points
+
     for(int i = 0; i < dataset.size(); ++i){
         T_map[i] = 0;
     }
 
-    // Iterate over each filter
+    //iterate over each filter
     for(const int &filter : filters){
-        // Get IDs of points matching the current filter
+    
         std::vector<int> F_ids = get_ids(dataset, filter);
 
-        // Randomly sample up to `threshold` points from F_ids
         std::vector<int> random_points = select_random_elements(F_ids, threshold);
 
-        // Find the point with the minimum usage in T_map
+        //find the point with the minimum usage in T_map
         int min_count = std::numeric_limits<int>::max();
         int min_point = -1;
 
@@ -680,8 +647,8 @@ std::map<int, int> Vamana::Filtered_Find_Medoid(std::vector<Data_Point> dataset,
             }
         }
 
-        // Update M_map and T_map
-        if(min_point != -1){ // Ensure a valid point was selected
+        //update M_map and T_map
+        if(min_point != -1){ 
             M_map[filter] = min_point;
             T_map[min_point] += 1;
         }
@@ -804,23 +771,6 @@ void Vamana::FilteredRobustPruning(RRGraph G, int q, std::unordered_set<int> V, 
     //update new neighboors
     G.get_node(q)->neighbors = std::move(out);
 }
-
-
-            // if(filterMin != -1){
-            //     if(filterNode == -1){
-            //         if(filterQ != filterMin){
-            //             continue;
-            //         }
-            //     }else if(filterQ == -1){
-            //         if(filterNode != filterMin){
-            //             continue;
-            //         }
-            //     }else if(filterNode == filterQ){
-            //         if(filterNode != filterMin){
-            //             continue;
-            //         }
-            //     }
-            // }
 
 
 RRGraph Vamana::Filtered_Vamana_Index(FilteredDataset dataset_obj, int L, int R, float a){

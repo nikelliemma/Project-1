@@ -15,6 +15,8 @@
 using namespace std;
 
 void runStitched(string , int , int ,int ,int , int );
+void runVamana(string , int , int ,int ,int , int );
+void runFiltered(string , int , int ,int ,int , int );
 
 
 // Function to read the file and store closest points into a vector of vectors
@@ -183,10 +185,12 @@ int main(int argc, char *argv[]){
         case 1:
             cout << "Running Vamana... " << endl;
             //run vamana
+
             break;
         case 2:
             cout << "Running Filtered Vamana... " << endl;
             //run filtered
+
             break;
         case 3:
             if(S == -1){

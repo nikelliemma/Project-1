@@ -39,8 +39,6 @@ std::vector<Data_Point> FilteredDataset::get_dataset(){
 
 Data_Point FilteredDataset::get_data_point(int index){
 
-    //if(index > this->get_vectors_num()) return ;
-
     return this->dataset[index];
 }
 
@@ -110,9 +108,6 @@ void FilteredDataset::read_Query_set(){
     uint32_t num_queries;
     file.read(reinterpret_cast<char*>(&num_queries), sizeof(uint32_t));
 
-    // Create a vector to store the queries
-    std::vector<Data_Point> query_set;
-
     // Read each query from the file
     for (uint32_t i = 0; i < num_queries; i++) {
         Data_Point query;
@@ -138,12 +133,11 @@ void FilteredDataset::read_Query_set(){
 
         // Add the query to the query set
         if(query_type != 0 && query_type != 1) continue;
-        query_set.push_back(query);
+        dataset.push_back(query);
         
     }
-     
-    // Set the query set as part of the object
-    this->dataset = query_set;
 
     return;
 }
+
+
