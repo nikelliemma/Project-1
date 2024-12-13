@@ -15,8 +15,8 @@
 using namespace std;
 
 void runStitched(string , int , int ,int ,int , int );
-void runVamana(string , int , int ,int ,int , int );
-void runFiltered(string , int , int ,int ,int , int );
+void runVamana( int ,int ,int , int );
+void runFiltered( int ,int ,int , int );
 
 
 // Function to read the file and store closest points into a vector of vectors
@@ -185,12 +185,12 @@ int main(int argc, char *argv[]){
         case 1:
             cout << "Running Vamana... " << endl;
             //run vamana
-
+            runVamana(L, R , a, k);
             break;
         case 2:
             cout << "Running Filtered Vamana... " << endl;
             //run filtered
-
+            runFiltered(L, R , a, k);
             break;
         case 3:
             if(S == -1){
@@ -204,6 +204,86 @@ int main(int argc, char *argv[]){
             printf("Unknow error. Terminating\n");
             exit(1);
     }
+}
+
+void runFiltered(int L, int R ,int alpha,int k){
+    string filename = "dummy-data.bin";
+
+    FilteredDataset d;
+    d.set_filepath(filename);
+    d.read_Dataset();
+
+    Vamana v(R,L,alpha);
+
+
+    auto start = std::chrono::high_resolution_clock::now();
+
+    RRGraph Vam = v.Filtered_Vamana_Index(d, L, R, alpha);
+    Vam.print_graph();
+    Vam.set_nodes_num(d.get_dataset().size());
+    Vam.write_to_binary_file("vamana_index.bin");
+
+    auto end = std::chrono::high_resolution_clock::now();
+    auto duration = std::chrono::duration_cast<std::chrono::seconds>(end - start).count();
+
+    std::cout << "Filtered Vamana index created in : " << duration << " seconds" << std::endl;
+
+    return;
+}
+
+void runVamana(int L, int R ,int alpha,int k){
+
+    Dataset<float> d;
+    d.set_filename("siftsmall_base.fvecs");
+    d.set_type(FLOAT);
+    d.read_dataset();
+
+
+    Dataset<int> groundtruth;
+    groundtruth.set_filename("siftsmall_groundtruth.ivecs");
+    groundtruth.set_type(INTEGER);
+    groundtruth.read_dataset();
+
+
+    Dataset<float> d1;
+    d1.set_filename("siftsmall_query.fvecs");
+    d1.set_type(FLOAT);
+    d1.read_dataset();
+
+
+    auto start = std::chrono::high_resolution_clock::now();
+
+    Vamana v(R, L, alpha);
+
+    //v.create_vamana_index("siftsmall_base.fvecs", 50, 20, 1);
+
+    RRGraph Vam = v.Vamana_Index(d.get_dataset(), L, R, alpha);
+
+    auto end = std::chrono::high_resolution_clock::now();
+    auto duration = std::chrono::duration_cast<std::chrono::seconds>(end - start).count();
+
+
+
+    //Vam.print_graph();
+    std::cout << "Vamana index created in : " << duration << " seconds" << std::endl;   
+
+
+    int medoid = 8736;
+
+    double avg_recall = 0.0;
+
+    for(int i=0;i<d1.get_dataset().size(); i++){
+        LVPair res = v.GreedySearch(Vam, medoid, d1.get_vector(i), k, L, d.get_dataset()); 
+
+        double recall = v.Get_Recall(res.first, groundtruth.get_vector(i));
+        avg_recall += recall;
+
+        cout << "Query " << i << ": recall = " << recall << "%" << endl;
+    }
+
+    cout << "average recall : " << (avg_recall / d1.get_dataset().size()) << endl;
+
+    return;
 }
 
 void runStitched(string filename, int L, int R ,int alpha,int k, int Rst){
