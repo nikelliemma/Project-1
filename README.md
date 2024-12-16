@@ -6,7 +6,6 @@
 
 
 
-
 Για να τρέξετε τον Filtered Vamana για το dummy-dataset: ./test_vam 
 Για τις παραμέτρους που δέχεται το πρόγραμμα υπάρχουν κάποια flags:
 -k: το k για τους k κοντινότερους γείτονες
@@ -25,7 +24,13 @@ O χρήστης επίσης πρέπει να προσθέσει τα εξής
 -a: η παράμετρος άλφα
 -r: η παράμετρος R
 -s: η R stiched παράμετρος (αν ο χρήστης έχει επιλέξει το -ο = 3)
+(δεν έχουμε βαλει το RunTest.cpp στο makefile οπότε δεν γίνεται compiled αυτόματα)
 
+Filtered_Vamana_Index() μέθοδος της Vamana class στο Vamana.cpp: Ο Filtered Vamana αλγόριθμος
+Filtered_Greedy_Search() μέθοδος της Vamana class στο Vamana.cpp: Ο Filtered Greedy Search αλγόριθμος
+Filtered_Greedy_Search() μέθοδος της Vamana class στο Vamana.cpp: Ο Filtered Robust Pruning αλγόριθμος
+Filtered_Find_Medoid() μέθοδος της Vamana class στο Vamana.cpp: Μέθοδος που βρίσκει το για κάθε φίλτρο το starting node
+StichedVamana() μέθοδος της Vamana class στο Vamana.cpp: Stiched Vamana αλγόριθμος
 
 
 compilation:
