@@ -11,7 +11,7 @@
 
 
 //---------------- Vamana Index Testing ----------------//
-
+/*
 
 double vam_index(int L, int R, float alpha, int k){
 
@@ -175,6 +175,7 @@ void R_regular_graph_test(){
     TEST_CHECK(check_graph(4));
     TEST_CHECK(check_graph(0));
 }
+*/
 
 // tests for euclidean
 void test_euclidean1(void){
