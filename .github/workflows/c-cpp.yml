@@ -13,5 +13,7 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
-    - name: make all
-      run: make all
+    - name: make test
+      run: make test
+    - name: make project
+      run: make project
