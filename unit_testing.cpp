@@ -280,3 +280,16 @@ TEST_LIST = {
 };
 
 //------------------------------------------------------//
+
+
+
+// TO DO LIST //
+
+
+/*
+
+FILTERED MEDOID
+filtered robust
+
+
+*/
