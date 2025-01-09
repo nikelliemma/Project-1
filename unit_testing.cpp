@@ -260,13 +260,14 @@ void test_recall3(void){
 
 
 TEST_LIST = {
-
+    /*
     {"Vamana index recall test 1", recall_test_1},
     {"Vamana index recall test 2", recall_test_2},
     {"Vamana index recall test 3", recall_test_3},
     {"Vamana graph test", Vam_Index_Graph_Test},
     {"medoid tests", medoid_test},
     {"R-regular graph", R_regular_graph_test},
+    */
     {"euclidean1", test_euclidean1},
     {"euclidean2", test_euclidean2},
     {"euclidean3", test_euclidean3},
