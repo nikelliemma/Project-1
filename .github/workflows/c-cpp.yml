@@ -17,5 +17,5 @@ jobs:
       run: make test
     - name: make project
       run: make project
-    - name: test
-      run: ./test
+    - name: unit_testing
+      run: ./unit_testing
