@@ -2,6 +2,7 @@
 #include <vector>
 #include <fstream>
 #include <unordered_map>
+#include <cstdint>
 
 #include "filtered_dataset.h"
 
