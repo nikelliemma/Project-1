@@ -6,8 +6,8 @@ HEADER          = filtered_dataset.h dataset.h Graph.h Vamana.h acutest.h
 OUT_PROJECT     = test_vam
 OUT_TEST        = unit_testing
 CC              = g++
-FLAGS           = -std=c++17 
-FLAGS_1         = -std=c++17 -O3 
+FLAGS           = -std=c++17 -fopenmp
+FLAGS_1         = -std=c++17 -O3 -fopenmp
 
 # Default target to build the executable
 all: $(OUT_PROJECT) $(OUT_TEST)

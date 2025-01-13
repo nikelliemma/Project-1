@@ -46,6 +46,10 @@ std::unordered_set<int> FilteredDataset::get_filter_set(){
     return this->filter_set;
 }
 
+int FilteredDataset::get_query_type(int index){
+    return this->dataset[index].timestamp;
+}
+
 //-------------------Set Methods-------------------//
 
 void FilteredDataset::set_dimension(int dimension){
@@ -132,7 +136,7 @@ void FilteredDataset::read_Query_set(){
         file.read(reinterpret_cast<char*>(query.data_vector.data()), sizeof(float) * this->get_dimension());
 
         // Add the query to the query set
-        if(query_type != 0 && query_type != 1) continue;
+        //if(query_type != 0 && query_type != 1) continue;
         dataset.push_back(query);
         
     }

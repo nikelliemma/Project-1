@@ -40,6 +40,7 @@ class FilteredDataset{
         Data_Point get_data_point(int index);
         std::vector<Data_Point> get_dataset();
         std::unordered_set<int> get_filter_set();
+        int get_query_type(int index);
 
         //read dataset and query set methods
         void read_Dataset();
