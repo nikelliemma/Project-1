@@ -85,7 +85,7 @@ double Vamana::euclidean_distance(const std::vector<type>& vec1, const std::vect
         double diff = vec1[i] - vec2[i];
         dist += diff * diff;
 
-        if(dist > min_distance) return std::numeric_limits<double>::max();
+        // /if(dist > min_distance) return std::numeric_limits<double>::max();
 
     }
 
@@ -128,8 +128,6 @@ double euclidean_distance1(std::vector<float>& vec1, std::vector<float>& vec2){
 
         double diff = vec1[i] - vec2[i];
         dist += diff * diff;
-
-        //if(dist > min_distance) return MAX_DIS;
 
     }
 
@@ -848,7 +846,7 @@ void Vamana::FilteredRobustPruning(RRGraph G, int q, std::unordered_set<int> V, 
 
 // PARALLEL 1
 
-// RRGraph Vamana::Filtered_Vamana_Index(FilteredDataset dataset_obj, int L, int R, float a) {
+// RRGraph Vamana::Filtered_Vamana_Index_Parallel(FilteredDataset dataset_obj, int L, int R, float a) {
 //     std::unordered_set<int> filters_set = dataset_obj.get_filter_set();
 //     std::vector<Data_Point> dataset = dataset_obj.get_dataset();
 
@@ -923,11 +921,14 @@ void Vamana::FilteredRobustPruning(RRGraph G, int q, std::unordered_set<int> V, 
 
 // PARALLEL 2
 
-RRGraph Vamana::Filtered_Vamana_Index(FilteredDataset dataset_obj, int L, int R, float a) {
+RRGraph Vamana::Filtered_Vamana_Index_Parallel(FilteredDataset dataset_obj, int L, int R, float a){
+
     std::unordered_set<int> filters_set = dataset_obj.get_filter_set();
     std::vector<Data_Point> dataset = dataset_obj.get_dataset();
 
-    omp_set_num_threads(4); // Set number of threads
+    int max_threads = omp_get_num_procs(); // Number of logical cores
+    omp_set_num_threads(max_threads);     // Set thread count accordingly
+    //omp_set_num_threads(4); // Set number of threads
     
     // Create an empty graph
     RRGraph graph(R);
@@ -950,7 +951,7 @@ RRGraph Vamana::Filtered_Vamana_Index(FilteredDataset dataset_obj, int L, int R,
         // Local private variables for each thread
         std::vector<int> local_visited;
         
-        #pragma omp for // nowait
+        #pragma omp for nowait
         for (int i = 0; i < N; i++) {
 
             //cout << i << endl;
@@ -967,7 +968,7 @@ RRGraph Vamana::Filtered_Vamana_Index(FilteredDataset dataset_obj, int L, int R,
             std::vector<int> perm_i_neighbours = graph.get_node(perm[i])->neighbors;
 
             for (int j : perm_i_neighbours) {
-                // Ensure mutual neighbors (i.e., undirected graph behavior)
+                
                 if (std::find(graph.get_node(j)->neighbors.begin(), graph.get_node(j)->neighbors.end(), perm[i]) == graph.get_node(j)->neighbors.end()) {
                     #pragma omp critical
                     graph.get_node(j)->neighbors.push_back(perm[i]);
@@ -983,7 +984,6 @@ RRGraph Vamana::Filtered_Vamana_Index(FilteredDataset dataset_obj, int L, int R,
             }
         }
         
-        // Now, merge local_visited back to the global visited list safely
         #pragma omp critical
         {
             visited.insert(visited.end(), local_visited.begin(), local_visited.end());
@@ -1000,7 +1000,7 @@ RRGraph Vamana::Filtered_Vamana_Index(FilteredDataset dataset_obj, int L, int R,
 
 // PARALLEL 3 
 
-// RRGraph Vamana::Filtered_Vamana_Index(FilteredDataset dataset_obj, int L, int R, float a){
+// RRGraph Vamana::Filtered_Vamana_Index_Parallel(FilteredDataset dataset_obj, int L, int R, float a){
 
 //     std::unordered_set<int> filters_set = dataset_obj.get_filter_set();
 //     std::vector<Data_Point> dataset = dataset_obj.get_dataset();
@@ -1071,77 +1071,66 @@ RRGraph Vamana::Filtered_Vamana_Index(FilteredDataset dataset_obj, int L, int R,
 // }
 
 
+RRGraph Vamana::Filtered_Vamana_Index(FilteredDataset dataset_obj, int L, int R, float a){
 
+    std::unordered_set<int> filters_set = dataset_obj.get_filter_set();
+    std::vector<Data_Point> dataset = dataset_obj.get_dataset();
 
-
-
-
-
-
-
-
-
-
-// RRGraph Vamana::Filtered_Vamana_Index(FilteredDataset dataset_obj, int L, int R, float a){
-
-//     std::unordered_set<int> filters_set = dataset_obj.get_filter_set();
-//     std::vector<Data_Point> dataset = dataset_obj.get_dataset();
-
-//     omp_set_num_threads(16);
+    omp_set_num_threads(16);
     
-//     //create an empty graph
-//     RRGraph graph(R);
-//     graph.create_Rregular_empty_graph(dataset);
-//     //graph.create_Rregular_graph(dataset); it makes it too slow!! 
+    //create an empty graph
+    RRGraph graph(R);
+    graph.create_Rregular_empty_graph(dataset);
+    //graph.create_Rregular_graph(dataset); it makes it too slow!! 
 
-//     //get the size of the dataset()
-//     int N = dataset.size();
+    //get the size of the dataset()
+    int N = dataset.size();
 
-//     //get the random permutation as a starting 
-//     std::vector<int> perm = std::move(get_random_permutation(N)); 
+    //get the random permutation as a starting 
+    std::vector<int> perm = std::move(get_random_permutation(N)); 
 
-//     std::map<int, int> filter_map = Filtered_Find_Medoid(dataset, filters_set, 1);
+    std::map<int, int> filter_map = Filtered_Find_Medoid(dataset, filters_set, 1);
 
-//     //L = filter_map.size() * 10;
+    //L = filter_map.size() * 10;
 
-//     std::vector<int> visited;
+    std::vector<int> visited;
 
-//     for(int i = 0; i<N; i++){
+    for(int i = 0; i<N; i++){
 
-//         cout << i << endl;
+        cout << i << endl;
 
-//         LVPair greedy_result = FilteredGreedySearch(graph, filter_map, perm[i], 0, L, filters_set, dataset);
+        LVPair greedy_result = FilteredGreedySearch(graph, filter_map, perm[i], 0, L, filters_set, dataset);
 
-//         visited.insert(visited.end(), greedy_result.second.begin(), greedy_result.second.end());
+        visited.insert(visited.end(), greedy_result.second.begin(), greedy_result.second.end());
 
-//         //run filtered robust prune
-//         FilteredRobustPruning(graph, perm[i], greedy_result.second, a, R, dataset_obj);
+        //run filtered robust prune
+        FilteredRobustPruning(graph, perm[i], greedy_result.second, a, R, dataset_obj);
 
-//         //get the neighbors of perm[i]
-//         std::vector<int> perm_i_neighbours = graph.get_node(perm[i])->neighbors;
+        //get the neighbors of perm[i]
+        std::vector<int> perm_i_neighbours = graph.get_node(perm[i])->neighbors;
 
-//         for(int j: perm_i_neighbours){
+        for(int j: perm_i_neighbours){
             
-//             if(std::find((graph.get_node(j)->neighbors).begin(), (graph.get_node(j)->neighbors).end(), perm[i]) == (graph.get_node(j)->neighbors).end()) {
-//                 (graph.get_node(j)->neighbors).push_back(perm[i]);
-//             }
+            if(std::find((graph.get_node(j)->neighbors).begin(), (graph.get_node(j)->neighbors).end(), perm[i]) == (graph.get_node(j)->neighbors).end()) {
+                (graph.get_node(j)->neighbors).push_back(perm[i]);
+            }
 
-//             int n = graph.get_node(j)->neighbors.size();
+            int n = graph.get_node(j)->neighbors.size();
 
-//             std::unordered_set<int> N_out_j(graph.get_node(j)->neighbors.begin(), graph.get_node(j)->neighbors.end());
+            std::unordered_set<int> N_out_j(graph.get_node(j)->neighbors.begin(), graph.get_node(j)->neighbors.end());
 
-//             if(n > R){
-//                 //run filtered robust prune
-//                 FilteredRobustPruning(graph, j, N_out_j, a, R, dataset_obj);
-//             }
+            if(n > R){
+                //run filtered robust prune
+                FilteredRobustPruning(graph, j, N_out_j, a, R, dataset_obj);
+            }
 
-//         }
+        }
 
-//     }
+    }
 
-//     return graph;
+    return graph;
 
-// }
+}
 
 
 
@@ -1208,56 +1197,78 @@ RRGraph Vamana::Vamana_Index(std::vector<std::vector<type> > dataset, int L, int
 }
 
 
-GraphCollection Vamana::StitchedVamana(FilteredDataset dataset_obj, int Lsmall, int Rsmall, int Rstitched, float a){
-    
-    GraphCollection collectionOfGraphs;
-    std::vector<std::vector<float>> PointsByFilter;
 
-    std::unordered_set<int> filters = dataset_obj.get_filter_set();
 
-    int size = dataset_obj.get_dataset().size();
-    int fsize = filters.size();
+std::vector<RRGraph> Vamana::StitchedVamana(FilteredDataset dataset_obj, int Lsmall, int Rsmall, int Rstitched, float a){
 
-    RRGraph subGraph(Rsmall);
+    std::vector<RRGraph> filter_graphs;
+    int n = dataset_obj.get_filter_set().size();
+    std::vector<Data_Point> dataset = dataset_obj.get_dataset();
 
-    //seperate points by filter and create subgraphs for each
-    for(int f = 0; f < fsize; f++){
-
-        cout << f << endl;
-
-        PointsByFilter.clear();
-
-        //create vector of points for each filter        
-        for(int i = 0; i < size; i++){
-
-            if(dataset_obj.get_data_point(i).categorical == f){
-                PointsByFilter.push_back(dataset_obj.get_data_point(i).data_vector);
-            }
-        }
-        //cout << "nodes num : " << PointsByFilter.size() << endl;
-
-        //create subgraphs with vamana for each filter
-        //since there is no stitching, we run vamana with Rstitched instead of Rsmall
-        if(PointsByFilter.size() <= Rsmall){
-            //skipping 1 or less point graph cause no point?
-            continue;
-        }
-        
-        subGraph = Vamana_Index(PointsByFilter, Lsmall, Rsmall, a);
-        collectionOfGraphs.push_back(subGraph);
+    for(int i = 0; i < n; i++) {
+        RRGraph subgraph(Rsmall);
+        filter_graphs.push_back(subgraph);
     }
 
-    
-    // for (int g = 0; g < collectionOfGraphs.size(); g++){
-    //     int sizeG = collectionOfGraphs[g].get_graph().size();
-    //     for(int q = 0; q < sizeG; q++){
-    //         FilteredRobustPruning(collectionOfGraphs[g], q, , a, Rstitched, dataset_obj);
-    //     }
-    // }
-    
+    for(int filter = 0; filter < n; filter++){
 
-    return collectionOfGraphs;
+        cout << filter << endl;
+
+        std::vector<std::vector<float>> PointsByFilter;
+
+        for(int i = 0; i < dataset.size(); i++){
+            if(dataset_obj.get_data_point(i).categorical == filter) PointsByFilter.push_back(dataset_obj.get_data_point(i).data_vector);
+        }
+
+        std::cout << PointsByFilter.size() << std::endl;
+
+        if(PointsByFilter.size() <= Rstitched) continue;
+
+        filter_graphs[filter] = Vamana_Index(PointsByFilter, Lsmall, Rstitched, a);
+
+    }
+
+    return filter_graphs;
 }
+
+
+
+
+std::vector<RRGraph> Vamana::StitchedVamanaParallel(FilteredDataset dataset_obj, int Lsmall, int Rsmall, int Rstitched, float a){
+
+    std::vector<RRGraph> filter_graphs;
+    int n = dataset_obj.get_filter_set().size();
+    std::vector<Data_Point> dataset = dataset_obj.get_dataset();
+
+    for(int i = 0; i < n; i++) {
+        RRGraph subgraph(Rsmall);
+        filter_graphs.push_back(subgraph);
+    }
+
+    //use omp to parallelize the loop
+    #pragma omp parallel for
+    for(int filter = 0; filter < n; filter++){
+
+        // cout << filter << endl;
+
+        std::vector<std::vector<float>> PointsByFilter;
+
+        for(int i = 0; i < dataset.size(); i++){
+            if(dataset_obj.get_data_point(i).categorical == filter) PointsByFilter.push_back(dataset_obj.get_data_point(i).data_vector);
+        }
+
+        // std::cout << PointsByFilter.size() << std::endl;
+
+        if(PointsByFilter.size() <= Rstitched) continue;
+
+        filter_graphs[filter] = Vamana_Index(PointsByFilter, Lsmall, Rstitched, a);
+
+    }
+
+    return filter_graphs;
+}
+
+
 
 //function to get the recall 
 double Vamana::Get_Recall(std::vector<int> vec1, std::vector<int> vec2){
@@ -1409,6 +1420,71 @@ template LVPair Vamana::GreedySearch<unsigned char>(RRGraph graph, int starting_
 template int Vamana::find_medoid<unsigned char>(std::vector<std::vector<unsigned char> > dataset);
 template RRGraph Vamana::Vamana_Index<unsigned char>(std::vector<std::vector<unsigned char> > dataset, int L, int R, float a);
 
+
+
+
+
+
+
+
+
+
+
+
+
+//THIS IS SOME CODE OF SOME OPTIMIZATIONS THAT DIDN'T WORK 
+
+
+// GraphCollection Vamana::StitchedVamana(FilteredDataset dataset_obj, int Lsmall, int Rsmall, int Rstitched, float a){
+    
+//     GraphCollection collectionOfGraphs;
+//     std::vector<std::vector<float>> PointsByFilter;
+
+//     std::unordered_set<int> filters = dataset_obj.get_filter_set();
+
+//     int size = dataset_obj.get_dataset().size();
+//     int fsize = filters.size();
+
+//     RRGraph subGraph(Rsmall);
+
+//     //seperate points by filter and create subgraphs for each
+//     for(int f = 0; f < fsize; f++){
+
+//         cout << f << endl;
+
+//         PointsByFilter.clear();
+
+//         //create vector of points for each filter        
+//         for(int i = 0; i < size; i++){
+
+//             if(dataset_obj.get_data_point(i).categorical == f){
+//                 PointsByFilter.push_back(dataset_obj.get_data_point(i).data_vector);
+//             }
+//         }
+//         //cout << "nodes num : " << PointsByFilter.size() << endl;
+
+//         //create subgraphs with vamana for each filter
+//         //since there is no stitching, we run vamana with Rstitched instead of Rsmall
+//         if(PointsByFilter.size() <= Rsmall){
+//             //skipping 1 or less point graph cause no point?
+//             continue;
+//         }
+        
+//         subGraph = Vamana_Index(PointsByFilter, Lsmall, Rsmall, a);
+//         collectionOfGraphs.push_back(subGraph);
+//     }
+
+    
+//     // for (int g = 0; g < collectionOfGraphs.size(); g++){
+//     //     int sizeG = collectionOfGraphs[g].get_graph().size();
+//     //     for(int q = 0; q < sizeG; q++){
+//     //         FilteredRobustPruning(collectionOfGraphs[g], q, , a, Rstitched, dataset_obj);
+//     //     }
+//     // }
+    
+
+//     return collectionOfGraphs;
+// }
 
 
 

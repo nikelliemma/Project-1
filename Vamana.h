@@ -58,6 +58,8 @@ class Vamana{
         LVPair FilteredGreedySearch(RRGraph graph, std::map<int, int> S_nodes, int query_vec, int k, int L, std::unordered_set<int> filters, std::vector<Data_Point> dataset);
         std::map<int, int> Filtered_Find_Medoid(std::vector<Data_Point> dataset, std::unordered_set<int> filters,int threshold);
         RRGraph Filtered_Vamana_Index(FilteredDataset dataset_obj, int L, int R, float a);
+        RRGraph Filtered_Vamana_Index_Parallel(FilteredDataset dataset_obj, int L, int R, float a); 
+        GraphCollection StitchedVamanaParallel(FilteredDataset dataset_obj, int Lsmall, int Rsmall, int Rstitched, float a);
         GraphCollection StitchedVamana(FilteredDataset, int , int , int , float);
         int find_medoid_f(std::vector<Data_Point> dataset);
 
