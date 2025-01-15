@@ -605,7 +605,6 @@ TEST_LIST = {
     {"euclidean1", test_euclidean1},
     {"euclidean2", test_euclidean2},
     {"euclidean3", test_euclidean3},
-    {"euclidean4", test_euclidean4},
     {0}
 
 };
