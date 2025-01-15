@@ -352,6 +352,12 @@ std::vector<int> findKNearestNeighborsForQuery(FilteredDataset& dataset,
 }
 
 
+
+
+
+
+//tests
+
 void Filtered_Queries_Recall_Test(){
 
     int R = 13;
