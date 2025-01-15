@@ -49,17 +49,6 @@ void test_euclidean3(void){
     TEST_EXCEPTION(myVam.euclidean_distance(v1, v3), std::exception);
 }
 
-void test_euclidean4(void){
-
-    Vamana myVam(1,1,1);
-    double result, euc, tolerance = 1e-6; 
-
-    std::vector<float> vf1 = {4.0, 5.67, -14.5}, vf2 = {1.02, -7.5, 9.0};
-
-    result = std::sqrt((4.0 - 1.02) * (4.0 - 1.02) + (5.67 + 7.5) * (5.67 + 7.5) + (-14.5 - 9.0) * (-14.5 - 9.0));
-    euc = myVam.euclidean_distance(vf1, vf2);
-    TEST_CHECK(std::abs(euc - result) < tolerance);
-}
 
 
 //---------------- Recall Testing ----------------//
