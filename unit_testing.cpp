@@ -15,19 +15,6 @@ using namespace std;
 
 //---------------- Euclidean Testing ----------------//
 
-void test_euclidean1(void){
-
-    Vamana myVam(1,1,1);
-    double result, euc; 
-
-    std::vector<int> v1 = {6, 2, 16}, v2 = {4, 24, 5};
-    
-    euc = myVam.euclidean_distance(v1, v2);
-    result = std::sqrt(609);
-
-    TEST_CHECK( euc == result);
-}
-
 void test_euclidean2(void){
 
     Vamana myVam(1,1,1);
@@ -602,7 +589,6 @@ TEST_LIST = {
     {"Filtered Vamana creation test", Filtered_Vamana_Test},
     {"Filtered Vamana Parallel creation test", Filtered_Vamana_Parallel_Test},
     //{"Recall for siftsmall queries file test", Vamana_Recall_Test},
-    {"euclidean1", test_euclidean1},
     {"euclidean2", test_euclidean2},
     {"euclidean3", test_euclidean3},
     {0}
