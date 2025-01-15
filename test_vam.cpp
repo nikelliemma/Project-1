@@ -205,7 +205,7 @@ int main(int argc, char *argv[]){
     RRGraph Vam = v.Filtered_Vamana_Index_Parallel(d, L, R, alpha);
     Vam.print_graph();
     Vam.set_nodes_num(d.get_dataset().size());
-    Vam.write_to_binary_file("parallel_filtered_vamana_index.bin");
+    //Vam.write_to_binary_file("parallel_filtered_vamana_index.bin");
 
     
     // RRGraph Vam(R);
@@ -233,31 +233,33 @@ int main(int argc, char *argv[]){
     int counter = 0;
 
 
-    // std::cout << "Filtered Vamana index created in : " << duration << " seconds" << std::endl;
-    // int counter_filtered = 0;
-    // int counter_unfiltered = 0;
-    // double recall_sum_filtered = 0.0;
-    // double recall_sum_unfiltered = 0.0;
-    // for(int i = 0; i < q.get_dataset().size();i++){
+    std::cout << "Filtered Vamana index created in : " << duration << " seconds" << std::endl;
+    int counter_filtered = 0;
+    int counter_unfiltered = 0;
+    double recall_sum_filtered = 0.0;
+    double recall_sum_unfiltered = 0.0;
+    for(int i = 0; i < q.get_dataset().size();i++){
 
-    //     if(q.get_query_type(i) == 1){
+        if(q.get_query_type(i) == 1){
 
-    //         auto knns = findKNearestNeighborsForQuery(d, q.get_data_point(i), q.get_data_point(i).categorical, k);
+            auto knns = findKNearestNeighborsForQuery(d, q.get_data_point(i), q.get_data_point(i).categorical, k);
 
-    //         if(knns.size() == 0) continue;
-    //         if(q.get_data_point(i).categorical > filter_map.size()) continue;
+            if(knns.size() == 0) continue;
+            if(q.get_data_point(i).categorical > filter_map.size()) continue;
 
-    //         counter_filtered++;
-    //         LVPair res = v.FilteredGreedySearch(Vam, filter_map, i, k, L, d.get_filter_set(), d.get_dataset(), q.get_dataset());
+            counter_filtered++;
+            LVPair res = v.FilteredGreedySearch(Vam, filter_map, i, k, L, d.get_filter_set(), d.get_dataset(), q.get_dataset());
 
-    //         double recall = v.Get_Recall(knns, res.first);
+            double recall = v.Get_Recall(knns, res.first);
 
 
-    //         recall_sum_filtered += recall;
+            recall_sum_filtered += recall;
 
-    //         cout << "query " << i << " recall = " << recall << endl;
+            cout << "query " << i << " recall = " << recall << endl;
 
-    //     }
+        }
+    }
+    std::cout << "Filtered Vamana index created in : " << duration << " seconds" << std::endl;
     //     if(q.get_query_type(i) == 0){
 
     //         auto knns = findKNearestNeighborsForQuery(d, q.get_data_point(i), q.get_data_point(i).categorical, k);

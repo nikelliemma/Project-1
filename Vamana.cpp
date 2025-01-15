@@ -67,7 +67,7 @@ RRGraph Vamana::get_index(){
     return this->vamana_index;
 }
 
-double min_distance = 0.0;
+double min_distance;
 
 //templated function to compute Euclidean distance between two vectors
 template <typename type>
@@ -85,7 +85,7 @@ double Vamana::euclidean_distance(const std::vector<type>& vec1, const std::vect
         double diff = vec1[i] - vec2[i];
         dist += diff * diff;
 
-        // /if(dist > min_distance) return std::numeric_limits<double>::max();
+        if(std::sqrt(dist) > min_distance) return std::numeric_limits<double>::max();
 
     }
 
@@ -108,7 +108,7 @@ double euclidean_distance(std::vector<float>& vec1, std::vector<float>& vec2){
         double diff = vec1[i] - vec2[i];
         dist += diff * diff;
 
-        if(dist > min_distance) return MAX_DIS;
+        if(std::sqrt(dist) > min_distance) return std::numeric_limits<double>::max();
 
     }
 
@@ -432,6 +432,8 @@ LVPair Vamana::FilteredGreedySearch(RRGraph graph, std::map<int, int> S_nodes, i
     std::vector<std::pair<int,double>> L_set;
     std::unordered_set<int> visited;
     std::vector<int> result;
+
+    //min_distance = std::numeric_limits<double>::max();
 
     for(const auto & [filter, node]: S_nodes){
         if(filter == dataset[query_vec].categorical){
@@ -844,83 +846,6 @@ void Vamana::FilteredRobustPruning(RRGraph G, int q, std::unordered_set<int> V, 
 }
 
 
-// PARALLEL 1
-
-// RRGraph Vamana::Filtered_Vamana_Index_Parallel(FilteredDataset dataset_obj, int L, int R, float a) {
-//     std::unordered_set<int> filters_set = dataset_obj.get_filter_set();
-//     std::vector<Data_Point> dataset = dataset_obj.get_dataset();
-
-//     //int max_threads = omp_get_num_procs(); // Number of logical cores
-//     //omp_set_num_threads(max_threads);     // Set thread count accordingly
-//     omp_set_num_threads(4); // Set number of threads
-   
-    
-//     // Create an empty graph
-//     RRGraph graph(R);
-//     graph.create_Rregular_empty_graph(dataset);
-    
-//     int N = dataset.size();
-    
-//     // Get the random permutation as a starting
-//     std::vector<int> perm = std::move(get_random_permutation(N)); 
-
-//     // Filter map
-//     std::map<int, int> filter_map = Filtered_Find_Medoid(dataset, filters_set, 1);
-    
-//     // Initialize the visited set
-//     std::vector<int> visited;
-    
-//     // Use OpenMP to parallelize the loop
-//     #pragma omp parallel 
-//     {
-//         // Local private variables for each thread
-//         std::vector<int> local_visited;
-        
-//         #pragma omp for //schedule(dynamic)
-//         for (int i = 0; i < N; i++) {
-//             cout << i << endl;
-//             // Perform greedy search
-//             LVPair greedy_result = FilteredGreedySearch(graph, filter_map, perm[i], 0, L, filters_set, dataset);
-            
-//             // Insert the result into the local_visited list
-//             local_visited.insert(local_visited.end(), greedy_result.second.begin(), greedy_result.second.end());
-
-//             // Run filtered robust prune
-//             FilteredRobustPruning(graph, perm[i], greedy_result.second, a, R, dataset_obj);
-
-//             // Get the neighbors of perm[i]
-//             std::vector<int> perm_i_neighbours = graph.get_node(perm[i])->neighbors;
-
-//             for (int j : perm_i_neighbours) {
-//                 // Ensure mutual neighbors (i.e., undirected graph behavior)
-//                 if (std::find(graph.get_node(j)->neighbors.begin(), graph.get_node(j)->neighbors.end(), perm[i]) == graph.get_node(j)->neighbors.end()) {
-//                     #pragma omp critical
-//                     graph.get_node(j)->neighbors.push_back(perm[i]);
-//                 }
-
-//                 int n = graph.get_node(j)->neighbors.size();
-//                 std::unordered_set<int> N_out_j(graph.get_node(j)->neighbors.begin(), graph.get_node(j)->neighbors.end());
-
-//                 if (n > R) {
-//                     // Run filtered robust prune on the neighbors if needed
-//                     FilteredRobustPruning(graph, j, N_out_j, a, R, dataset_obj);
-//                 }
-//             }
-//         }
-        
-//         // Now, merge local_visited back to the global visited list safely
-//         #pragma omp critical
-//         {
-//             visited.insert(visited.end(), local_visited.begin(), local_visited.end());
-//         }
-//     }
-
-//     return graph;
-// }
-
-
-// PARALLEL 2
-
 RRGraph Vamana::Filtered_Vamana_Index_Parallel(FilteredDataset dataset_obj, int L, int R, float a){
 
     std::unordered_set<int> filters_set = dataset_obj.get_filter_set();
@@ -996,87 +921,10 @@ RRGraph Vamana::Filtered_Vamana_Index_Parallel(FilteredDataset dataset_obj, int 
 
 
 
-
-
-// PARALLEL 3 
-
-// RRGraph Vamana::Filtered_Vamana_Index_Parallel(FilteredDataset dataset_obj, int L, int R, float a){
-
-//     std::unordered_set<int> filters_set = dataset_obj.get_filter_set();
-//     std::vector<Data_Point> dataset = dataset_obj.get_dataset();
-
-//     omp_set_num_threads(4);
-    
-//     //create an empty graph
-//     RRGraph graph(R);
-//     graph.create_Rregular_empty_graph(dataset);
-//     //graph.create_Rregular_graph(dataset); it makes it too slow!! 
-
-//     //get the size of the dataset()
-//     int N = dataset.size();
-
-//     //get the random permutation as a starting 
-//     std::vector<int> perm = std::move(get_random_permutation(N)); 
-
-//     std::map<int, int> filter_map = Filtered_Find_Medoid(dataset, filters_set, 1);
-
-//     //L = filter_map.size() * 10;
-
-//     std::vector<int> visited;
-
-//     #pragma omp parallel
-//     {
-
-//     #pragma omp for schedule(dynamic)       
-//     for(int i = 0; i<N; i++){
-
-//         cout << i << endl;
-
-//         LVPair greedy_result = FilteredGreedySearch(graph, filter_map, perm[i], 0, L, filters_set, dataset);
-
-//         #pragma omp critical
-//         visited.insert(visited.end(), greedy_result.second.begin(), greedy_result.second.end());
-
-//         //run filtered robust prune
-//         #pragma omp critical
-//         FilteredRobustPruning(graph, perm[i], greedy_result.second, a, R, dataset_obj);
-
-//         //get the neighbors of perm[i]
-//         std::vector<int> perm_i_neighbours = graph.get_node(perm[i])->neighbors;
-
-//         for(int j: perm_i_neighbours){
-            
-//             if(std::find((graph.get_node(j)->neighbors).begin(), (graph.get_node(j)->neighbors).end(), perm[i]) == (graph.get_node(j)->neighbors).end()) {
-//                 #pragma omp critical 
-//                 (graph.get_node(j)->neighbors).push_back(perm[i]);
-//             }
-
-//             int n = graph.get_node(j)->neighbors.size();
-
-//             std::unordered_set<int> N_out_j(graph.get_node(j)->neighbors.begin(), graph.get_node(j)->neighbors.end());
-
-//             if(n > R){
-//                 //run filtered robust prune
-//                 #pragma omp critical
-//                 FilteredRobustPruning(graph, j, N_out_j, a, R, dataset_obj);
-//             }
-
-//         }
-
-//     }
-//     }
-
-//     return graph;
-
-// }
-
-
 RRGraph Vamana::Filtered_Vamana_Index(FilteredDataset dataset_obj, int L, int R, float a){
 
     std::unordered_set<int> filters_set = dataset_obj.get_filter_set();
     std::vector<Data_Point> dataset = dataset_obj.get_dataset();
-
-    omp_set_num_threads(16);
     
     //create an empty graph
     RRGraph graph(R);
@@ -1433,6 +1281,153 @@ template RRGraph Vamana::Vamana_Index<unsigned char>(std::vector<std::vector<uns
 
 
 //THIS IS SOME CODE OF SOME OPTIMIZATIONS THAT DIDN'T WORK 
+
+// PARALLEL 1
+
+// RRGraph Vamana::Filtered_Vamana_Index_Parallel(FilteredDataset dataset_obj, int L, int R, float a) {
+//     std::unordered_set<int> filters_set = dataset_obj.get_filter_set();
+//     std::vector<Data_Point> dataset = dataset_obj.get_dataset();
+
+//     //int max_threads = omp_get_num_procs(); // Number of logical cores
+//     //omp_set_num_threads(max_threads);     // Set thread count accordingly
+//     omp_set_num_threads(4); // Set number of threads
+   
+    
+//     // Create an empty graph
+//     RRGraph graph(R);
+//     graph.create_Rregular_empty_graph(dataset);
+    
+//     int N = dataset.size();
+    
+//     // Get the random permutation as a starting
+//     std::vector<int> perm = std::move(get_random_permutation(N)); 
+
+//     // Filter map
+//     std::map<int, int> filter_map = Filtered_Find_Medoid(dataset, filters_set, 1);
+    
+//     // Initialize the visited set
+//     std::vector<int> visited;
+    
+//     // Use OpenMP to parallelize the loop
+//     #pragma omp parallel 
+//     {
+//         // Local private variables for each thread
+//         std::vector<int> local_visited;
+        
+//         #pragma omp for //schedule(dynamic)
+//         for (int i = 0; i < N; i++) {
+//             cout << i << endl;
+//             // Perform greedy search
+//             LVPair greedy_result = FilteredGreedySearch(graph, filter_map, perm[i], 0, L, filters_set, dataset);
+            
+//             // Insert the result into the local_visited list
+//             local_visited.insert(local_visited.end(), greedy_result.second.begin(), greedy_result.second.end());
+
+//             // Run filtered robust prune
+//             FilteredRobustPruning(graph, perm[i], greedy_result.second, a, R, dataset_obj);
+
+//             // Get the neighbors of perm[i]
+//             std::vector<int> perm_i_neighbours = graph.get_node(perm[i])->neighbors;
+
+//             for (int j : perm_i_neighbours) {
+//                 // Ensure mutual neighbors (i.e., undirected graph behavior)
+//                 if (std::find(graph.get_node(j)->neighbors.begin(), graph.get_node(j)->neighbors.end(), perm[i]) == graph.get_node(j)->neighbors.end()) {
+//                     #pragma omp critical
+//                     graph.get_node(j)->neighbors.push_back(perm[i]);
+//                 }
+
+//                 int n = graph.get_node(j)->neighbors.size();
+//                 std::unordered_set<int> N_out_j(graph.get_node(j)->neighbors.begin(), graph.get_node(j)->neighbors.end());
+
+//                 if (n > R) {
+//                     // Run filtered robust prune on the neighbors if needed
+//                     FilteredRobustPruning(graph, j, N_out_j, a, R, dataset_obj);
+//                 }
+//             }
+//         }
+        
+//         // Now, merge local_visited back to the global visited list safely
+//         #pragma omp critical
+//         {
+//             visited.insert(visited.end(), local_visited.begin(), local_visited.end());
+//         }
+//     }
+
+//     return graph;
+// }
+
+
+// PARALLEL 3 
+
+// RRGraph Vamana::Filtered_Vamana_Index_Parallel(FilteredDataset dataset_obj, int L, int R, float a){
+
+//     std::unordered_set<int> filters_set = dataset_obj.get_filter_set();
+//     std::vector<Data_Point> dataset = dataset_obj.get_dataset();
+
+//     omp_set_num_threads(4);
+    
+//     //create an empty graph
+//     RRGraph graph(R);
+//     graph.create_Rregular_empty_graph(dataset);
+//     //graph.create_Rregular_graph(dataset); it makes it too slow!! 
+
+//     //get the size of the dataset()
+//     int N = dataset.size();
+
+//     //get the random permutation as a starting 
+//     std::vector<int> perm = std::move(get_random_permutation(N)); 
+
+//     std::map<int, int> filter_map = Filtered_Find_Medoid(dataset, filters_set, 1);
+
+//     //L = filter_map.size() * 10;
+
+//     std::vector<int> visited;
+
+//     #pragma omp parallel
+//     {
+
+//     #pragma omp for schedule(dynamic)       
+//     for(int i = 0; i<N; i++){
+
+//         cout << i << endl;
+
+//         LVPair greedy_result = FilteredGreedySearch(graph, filter_map, perm[i], 0, L, filters_set, dataset);
+
+//         #pragma omp critical
+//         visited.insert(visited.end(), greedy_result.second.begin(), greedy_result.second.end());
+
+//         //run filtered robust prune
+//         #pragma omp critical
+//         FilteredRobustPruning(graph, perm[i], greedy_result.second, a, R, dataset_obj);
+
+//         //get the neighbors of perm[i]
+//         std::vector<int> perm_i_neighbours = graph.get_node(perm[i])->neighbors;
+
+//         for(int j: perm_i_neighbours){
+            
+//             if(std::find((graph.get_node(j)->neighbors).begin(), (graph.get_node(j)->neighbors).end(), perm[i]) == (graph.get_node(j)->neighbors).end()) {
+//                 #pragma omp critical 
+//                 (graph.get_node(j)->neighbors).push_back(perm[i]);
+//             }
+
+//             int n = graph.get_node(j)->neighbors.size();
+
+//             std::unordered_set<int> N_out_j(graph.get_node(j)->neighbors.begin(), graph.get_node(j)->neighbors.end());
+
+//             if(n > R){
+//                 //run filtered robust prune
+//                 #pragma omp critical
+//                 FilteredRobustPruning(graph, j, N_out_j, a, R, dataset_obj);
+//             }
+
+//         }
+
+//     }
+//     }
+
+//     return graph;
+
+// }
 
 
 // GraphCollection Vamana::StitchedVamana(FilteredDataset dataset_obj, int Lsmall, int Rsmall, int Rstitched, float a){
