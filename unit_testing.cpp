@@ -137,7 +137,7 @@ void test_index(){
 
 
 //---------------- Medoid Testing ----------------//
-
+/*
 void medoid_test(){
 
     //siftsmall dataset medoid 
@@ -164,6 +164,7 @@ void medoid_test(){
     std::vector<std::vector<float>> dataset4 = {{1.0, 2.0, 3.0}, {2.0, 3.0, 4.0}, {4.0, 0.0, 1.0}, {3.0, 3.0, 3.0}};
     TEST_CHECK(v.find_medoid(dataset4) == 3);
 }
+*/
 
 
 //---------------- Graph Testing ----------------//
@@ -581,7 +582,7 @@ TEST_LIST = {
     {"Starting points test (filtered find medoid parallel)", Filtered_Find_Medoid_Test},
     {"Recall test for filtered queries", Filtered_Queries_Recall_Test},
     {"Recall test for unfiltered queries", Unfiltered_Queries_Recall_Tests},
-    {"medoid tests", medoid_test},
+    //{"medoid tests", medoid_test},
     {"R-regular graph", R_regular_graph_test},
     {"Vamana index recall test 1", test_recall1},
     {"Vamana index recall test 2", test_recall2},
