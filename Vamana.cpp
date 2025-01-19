@@ -94,6 +94,24 @@ double Vamana::euclidean_distance(const std::vector<type>& vec1, const std::vect
 }
 
 
+double Vamana::euclidean_distance(const std::vector<int>& vec1, const std::vector<int>& vec2){
+
+    if(vec1.size() != vec2.size()){
+        throw std::invalid_argument("Vectors must be of the same length.");
+    }
+
+    double dist = 0.0;
+
+    //#pragma omp parallel for reduction(+:dist) 
+    for(int i = 0; i < vec1.size(); ++i){
+
+        double diff = vec1[i] - vec2[i];
+        dist += diff * diff;
+
+    }
+
+    return std::sqrt(dist);
+}
 
 
 //templated function to compute Euclidean distance between two vectors for plain Vamana index 
@@ -116,28 +134,6 @@ double euclidean_distance_1(const std::vector<type>& vec1, const std::vector<typ
 
     return std::sqrt(dist);
 }
-
-
-// double euclidean_distance(std::vector<float>& vec1, std::vector<float>& vec2){
-
-//     if(vec1.size() != vec2.size()){
-//         throw std::invalid_argument("Vectors must be of the same length.");
-//     }
-
-//     double dist = 0.0;
-    
-//     //#pragma omp parallel for reduction(+:dist) 
-//     for(int i = 0; i < vec1.size(); ++i){
-
-//         double diff = vec1[i] - vec2[i];
-//         dist += diff * diff;
-
-//         if(std::sqrt(dist) > min_distance) return std::numeric_limits<double>::max();
-
-//     }
-
-//     return std::sqrt(dist);
-// }
 
 //euclidean distance for robust pruning without early stopping 
 double euclidean_distance1(std::vector<float>& vec1, std::vector<float>& vec2){

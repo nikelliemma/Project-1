@@ -15,26 +15,26 @@ using namespace std;
 
 //---------------- Euclidean Testing ----------------//
 
-// void test_euclidean2(void){
+void test_euclidean2(void){
 
-//     Vamana myVam(1,1,1);
-//     double result, euc; 
+    Vamana myVam(1,1,1);
+    double result, euc; 
 
-//     std::vector<int> v3 = {1,1}, v4 = {1,1}; 
+    std::vector<int> v3 = {1,1}, v4 = {1,1}; 
  
-//     result = std::sqrt(0), euc = myVam.euclidean_distance(v3, v4);
-//     TEST_CHECK( euc == result);
-// }
+    result = std::sqrt(0), euc = myVam.euclidean_distance(v3, v4);
+    TEST_CHECK( euc == result);
+}
 
-// void test_euclidean3(void){
+void test_euclidean3(void){
 
-//     Vamana myVam(1,1,1);
-//     double result, euc; 
+    Vamana myVam(1,1,1);
+    double result, euc; 
 
-//     std::vector<int> v1 = {6, 2, 16}, v3 = {1,1}; 
+    std::vector<int> v1 = {6, 2, 16}, v3 = {1,1}; 
 
-//     TEST_EXCEPTION(myVam.euclidean_distance(v1, v3), std::exception);
-// }
+    TEST_EXCEPTION(myVam.euclidean_distance(v1, v3), std::exception);
+}
 
 
 
@@ -590,8 +590,8 @@ TEST_LIST = {
     {"Filtered Vamana creation test", Filtered_Vamana_Test},
     {"Filtered Vamana Parallel creation test", Filtered_Vamana_Parallel_Test},
     //{"Recall for siftsmall queries file test", Vamana_Recall_Test},
-    // {"euclidean2", test_euclidean2},
-    // {"euclidean3", test_euclidean3},
+    {"euclidean2", test_euclidean2},
+    {"euclidean3", test_euclidean3},
     {0}
 
 };

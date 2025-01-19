@@ -37,8 +37,8 @@ class Vamana{
         void set_alpha(int alpha);
         void set_index(RRGraph graph);
         RRGraph get_index();
+        double euclidean_distance(const std::vector<int>& vec1, const std::vector<int>& vec2);
         template <typename type>
-        //double euclidean_distance(const std::vector<type>& vec1, const std::vector<type>& vec2);
         double euclidean_distance(const std::vector<type>& vec1, const std::vector<type>& vec2, double min_dis);
         template <typename Type>
         LVPair GreedySearch(RRGraph graph, int starting_node, int query, int k, int L, std::vector<vector<Type> > dataset);
