@@ -67,11 +67,12 @@ RRGraph Vamana::get_index(){
     return this->vamana_index;
 }
 
-double min_distance;
 
-//templated function to compute Euclidean distance between two vectors
+
+//templated function to compute Euclidean distance between two vectors 
+//with early stopping if the current dis has suprassed the minimum distance
 template <typename type>
-double Vamana::euclidean_distance(const std::vector<type>& vec1, const std::vector<type>& vec2){
+double Vamana::euclidean_distance(const std::vector<type>& vec1, const std::vector<type>& vec2, double min_distance){
 
     if(vec1.size() != vec2.size()){
         throw std::invalid_argument("Vectors must be of the same length.");
@@ -94,27 +95,51 @@ double Vamana::euclidean_distance(const std::vector<type>& vec1, const std::vect
 
 
 
-double euclidean_distance(std::vector<float>& vec1, std::vector<float>& vec2){
+
+//templated function to compute Euclidean distance between two vectors for plain Vamana index 
+template <typename type>
+double euclidean_distance_1(const std::vector<type>& vec1, const std::vector<type>& vec2){
 
     if(vec1.size() != vec2.size()){
         throw std::invalid_argument("Vectors must be of the same length.");
     }
 
     double dist = 0.0;
+
+    //#pragma omp parallel for reduction(+:dist) 
+    for(int i = 0; i < vec1.size(); ++i){
+
+        double diff = vec1[i] - vec2[i];
+        dist += diff * diff;
+
+    }
+
+    return std::sqrt(dist);
+}
+
+
+// double euclidean_distance(std::vector<float>& vec1, std::vector<float>& vec2){
+
+//     if(vec1.size() != vec2.size()){
+//         throw std::invalid_argument("Vectors must be of the same length.");
+//     }
+
+//     double dist = 0.0;
     
-    //#pragma omp parallel for reduction(+:dist) 
-    for(int i = 0; i < vec1.size(); ++i){
+//     //#pragma omp parallel for reduction(+:dist) 
+//     for(int i = 0; i < vec1.size(); ++i){
 
-        double diff = vec1[i] - vec2[i];
-        dist += diff * diff;
+//         double diff = vec1[i] - vec2[i];
+//         dist += diff * diff;
 
-        if(std::sqrt(dist) > min_distance) return std::numeric_limits<double>::max();
+//         if(std::sqrt(dist) > min_distance) return std::numeric_limits<double>::max();
 
-    }
+//     }
 
-    return std::sqrt(dist);
-}
+//     return std::sqrt(dist);
+// }
 
+//euclidean distance for robust pruning without early stopping 
 double euclidean_distance1(std::vector<float>& vec1, std::vector<float>& vec2){
 
     if(vec1.size() != vec2.size()){
@@ -151,7 +176,7 @@ int Vamana::find_medoid(std::vector<std::vector<type> > dataset){
         
         for(int j = 0; j < n; ++j){
             if(i != j){
-                total_distance += euclidean_distance(dataset[i], dataset[j]);
+                total_distance += euclidean_distance_1(dataset[i], dataset[j]);
             }
         }
         
@@ -164,77 +189,77 @@ int Vamana::find_medoid(std::vector<std::vector<type> > dataset){
     return medoid_index;    
 }
 
-int Vamana::find_medoid_filtered(std::vector<Data_Point> dataset, int filter) {
+// int Vamana::find_medoid_filtered(std::vector<Data_Point> dataset, int filter) {
 
-    int n = dataset.size();
-    int medoid_index = -1;
-    double min_total_distance = std::numeric_limits<double>::max();
+//     int n = dataset.size();
+//     int medoid_index = -1;
+//     double min_total_distance = std::numeric_limits<double>::max();
 
-    // Filtered indices of the dataset that match the categorical value
-    std::vector<int> filtered_indices;
-    for (int i = 0; i < n; ++i) {
-        if (dataset[i].categorical == filter) {
-            filtered_indices.push_back(i);
-        }
-    }
+//     // Filtered indices of the dataset that match the categorical value
+//     std::vector<int> filtered_indices;
+//     for (int i = 0; i < n; ++i) {
+//         if (dataset[i].categorical == filter) {
+//             filtered_indices.push_back(i);
+//         }
+//     }
 
-    int filtered_size = filtered_indices.size();
+//     int filtered_size = filtered_indices.size();
 
-    // Return -1 if no data points match the filter
-    if (filtered_size == 0) {
-        return -1;
-    }
+//     // Return -1 if no data points match the filter
+//     if (filtered_size == 0) {
+//         return -1;
+//     }
 
-    // Compute the medoid using only filtered data points
-    for (int i_idx = 0; i_idx < filtered_size; ++i_idx) {
-        int i = filtered_indices[i_idx];
-        double total_distance = 0.0;
+//     // Compute the medoid using only filtered data points
+//     for (int i_idx = 0; i_idx < filtered_size; ++i_idx) {
+//         int i = filtered_indices[i_idx];
+//         double total_distance = 0.0;
 
-        for (int j_idx = 0; j_idx < filtered_size; ++j_idx) {
-            int j = filtered_indices[j_idx];
-            if (i != j) {
-                total_distance += euclidean_distance(dataset[i].data_vector, dataset[j].data_vector);
-            }
-        }
+//         for (int j_idx = 0; j_idx < filtered_size; ++j_idx) {
+//             int j = filtered_indices[j_idx];
+//             if (i != j) {
+//                 total_distance += euclidean_distance(dataset[i].data_vector, dataset[j].data_vector);
+//             }
+//         }
 
-        if (total_distance < min_total_distance) {
-            min_total_distance = total_distance;
-            medoid_index = i;
-        }
-    }
+//         if (total_distance < min_total_distance) {
+//             min_total_distance = total_distance;
+//             medoid_index = i;
+//         }
+//     }
 
-    return medoid_index;
-}
-
-
+//     return medoid_index;
+// }
 
 
 
-int Vamana::find_medoid_f(std::vector<Data_Point> dataset){
 
-    int n = dataset.size();
-    int d = dataset[0].data_vector.size();
-    int medoid_index = -1;
-    double min_total_distance = std::numeric_limits<double>::max();
+
+// int Vamana::find_medoid_f(std::vector<Data_Point> dataset){
+
+//     int n = dataset.size();
+//     int d = dataset[0].data_vector.size();
+//     int medoid_index = -1;
+//     double min_total_distance = std::numeric_limits<double>::max();
     
-    for(int i = 0; i < n; ++i){
+//     for(int i = 0; i < n; ++i){
 
-        double total_distance = 0.0;
+//         double total_distance = 0.0;
         
-        for(int j = 0; j < n; ++j){
-            if(i != j){
-                total_distance += euclidean_distance(dataset[i].data_vector, dataset[j].data_vector);
-            }
-        }
+//         for(int j = 0; j < n; ++j){
+//             if(i != j){
+//                 total_distance += euclidean_distance(dataset[i].data_vector, dataset[j].data_vector);
+//             }
+//         }
         
-        if(total_distance < min_total_distance){
-            min_total_distance = total_distance;
-            medoid_index = i;
-        }
-    }
+//         if(total_distance < min_total_distance){
+//             min_total_distance = total_distance;
+//             medoid_index = i;
+//         }
+//     }
     
-    return medoid_index;    
-}
+//     return medoid_index;    
+// }
 
 
 //check if the min heap has elements that are not in the visited set
@@ -276,7 +301,7 @@ LVPair Vamana::GreedySearch(RRGraph graph, int starting_node, int query, int k, 
     //set to keep track of the nodes that are in min_heap
     std::unordered_set<int> min_heap_nodes;
 
-    min_heap.emplace(euclidean_distance(dataset[starting_node], dataset[query]), starting_node);
+    min_heap.emplace(euclidean_distance_1(dataset[starting_node], dataset[query]), starting_node);
 
     //start the greedy search loop
     while(has_unvisited_elements(min_heap, visited)){
@@ -299,7 +324,7 @@ LVPair Vamana::GreedySearch(RRGraph graph, int starting_node, int query, int k, 
         //insert the neighbors of the min distance node to the query into the result (L) set
         for(int node: graph.get_node(min_idx)->neighbors){ 
             if(min_heap_nodes.find(node) == min_heap_nodes.end()){
-                double distance = euclidean_distance(dataset[node], dataset[query]);
+                double distance = euclidean_distance_1(dataset[node], dataset[query]);
                 min_heap.emplace(distance, node);
                 min_heap_nodes.emplace(node);
             }
@@ -345,7 +370,7 @@ LVPair Vamana::GreedySearch(RRGraph graph, int starting_node, std::vector<type> 
     std::vector<int> result;
     std::unordered_set<int> min_heap_nodes;
 
-    min_heap.emplace(euclidean_distance(dataset[starting_node], q_vec), starting_node);
+    min_heap.emplace(euclidean_distance_1(dataset[starting_node], q_vec), starting_node);
 
     //start the greedy search loop
     while(has_unvisited_elements(min_heap, visited)){
@@ -370,7 +395,7 @@ LVPair Vamana::GreedySearch(RRGraph graph, int starting_node, std::vector<type> 
 
             //insert them only if they are not already in the min heap 
             if(min_heap_nodes.find(node) == min_heap_nodes.end()){    
-                double distance = euclidean_distance(dataset[node], q_vec);
+                double distance = euclidean_distance_1(dataset[node], q_vec);
                 min_heap.emplace(distance, node);
                 min_heap_nodes.emplace(node);
             }
@@ -433,11 +458,11 @@ LVPair Vamana::FilteredGreedySearch(RRGraph graph, std::map<int, int> S_nodes, i
     std::unordered_set<int> visited;
     std::vector<int> result;
 
-    //min_distance = std::numeric_limits<double>::max();
+    double min_distance = std::numeric_limits<double>::max();
 
     for(const auto & [filter, node]: S_nodes){
         if(filter == dataset[query_vec].categorical){
-            L_set.push_back({node, euclidean_distance(dataset[node].data_vector, dataset[query_vec].data_vector)});
+            L_set.push_back({node, euclidean_distance(dataset[node].data_vector, dataset[query_vec].data_vector, min_distance)});
         }
     }
 
@@ -486,7 +511,7 @@ LVPair Vamana::FilteredGreedySearch(RRGraph graph, std::map<int, int> S_nodes, i
 
             // If the node is not found in L_set, add it
             if(it == L_set.end()){
-                double dist = euclidean_distance(dataset[node].data_vector, dataset[query_vec].data_vector);
+                double dist = euclidean_distance(dataset[node].data_vector, dataset[query_vec].data_vector, min_distance);
                 if (dist < min_distance) {
                     min_distance = dist; // Update the minimum distance
                 }
@@ -557,7 +582,7 @@ LVPair Vamana::FilteredGreedySearch(RRGraph graph, std::map<int, int> S_nodes, i
             index++;
         }
         int min_idx = L_set[index].first;
-        min_distance = L_set[index].second;
+        //min_distance = L_set[index].second;
 
         std::vector<int> new_neighbours;
 
@@ -742,7 +767,7 @@ void Vamana::RobustPruning(RRGraph G, int q, std::unordered_set<int> V, float a,
     std::priority_queue<std::pair<double, int>> minHeap{};
 
     for(int node : V){
-        minHeap.emplace(-1 * euclidean_distance(dataset[q], dataset[node]), node);//* (-1) to make it min from max
+        minHeap.emplace(-1 * euclidean_distance_1(dataset[q], dataset[node]), node);//* (-1) to make it min from max
     }
 
     while(!V.empty()){
@@ -760,8 +785,8 @@ void Vamana::RobustPruning(RRGraph G, int q, std::unordered_set<int> V, float a,
         std::unordered_set<int> temp = V;
         
         for(int node: temp){
-            double dis1 = euclidean_distance(dataset[minNode], dataset[node]);
-            double dis2 = euclidean_distance(dataset[q], dataset[node]);
+            double dis1 = euclidean_distance_1(dataset[minNode], dataset[node]);
+            double dis2 = euclidean_distance_1(dataset[q], dataset[node]);
 
 
             if((a * dis1) <= dis2){
@@ -770,7 +795,7 @@ void Vamana::RobustPruning(RRGraph G, int q, std::unordered_set<int> V, float a,
                 //remake heap for updated V
                 minHeap = {};
                 for(int i : V){
-                    minHeap.emplace(-1 * euclidean_distance(dataset[q], dataset[i]), i);
+                    minHeap.emplace(-1 * euclidean_distance_1(dataset[q], dataset[i]), i);
                 }
             }
         }
@@ -876,7 +901,7 @@ RRGraph Vamana::Filtered_Vamana_Index_Parallel(FilteredDataset dataset_obj, int 
         // Local private variables for each thread
         std::vector<int> local_visited;
         
-        #pragma omp for nowait
+        #pragma omp for nowait 
         for (int i = 0; i < N; i++) {
 
             //cout << i << endl;
@@ -1043,6 +1068,7 @@ RRGraph Vamana::Vamana_Index(std::vector<std::vector<type> > dataset, int L, int
     return graph;
 
 }
+
 
 
 

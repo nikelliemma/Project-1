@@ -203,6 +203,11 @@ int main(int argc, char *argv[]){
     float alpha = 1.0;
 
     RRGraph Vam = v.Filtered_Vamana_Index_Parallel(d, L, R, alpha);
+    auto end = std::chrono::high_resolution_clock::now();
+    auto duration = std::chrono::duration_cast<std::chrono::seconds>(end - start).count();
+
+    std::cout << "Filtered Vamana index created in : " << duration << " seconds" << std::endl;
+
     Vam.print_graph();
     Vam.set_nodes_num(d.get_dataset().size());
     //Vam.write_to_binary_file("parallel_filtered_vamana_index.bin");
@@ -212,11 +217,6 @@ int main(int argc, char *argv[]){
     // Vam.read_from_binary_file("vamana_index_2.bin");
 
     // Vam.print_graph();
-
-    auto end = std::chrono::high_resolution_clock::now();
-    auto duration = std::chrono::duration_cast<std::chrono::seconds>(end - start).count();
-
-    std::cout << "Filtered Vamana index created in : " << duration << " seconds" << std::endl;
 
     map<int, int> filter_map = v.Filtered_Find_Medoid(d.get_dataset(),d.get_filter_set(),1);
 
@@ -232,8 +232,6 @@ int main(int argc, char *argv[]){
     vector<int> index;
     int counter = 0;
 
-
-    std::cout << "Filtered Vamana index created in : " << duration << " seconds" << std::endl;
     int counter_filtered = 0;
     int counter_unfiltered = 0;
     double recall_sum_filtered = 0.0;
@@ -259,6 +257,7 @@ int main(int argc, char *argv[]){
 
         }
     }
+    
     std::cout << "Filtered Vamana index created in : " << duration << " seconds" << std::endl;
     //     if(q.get_query_type(i) == 0){
 
@@ -283,9 +282,9 @@ int main(int argc, char *argv[]){
 
     //     }
     // }
-    // cout << counter_unfiltered << endl;
-    // cout << "average recall for filtered queries = " << recall_sum_filtered / counter_filtered << "%" << endl;
-    // cout << "average recall for filtered queries = " << recall_sum_unfiltered / counter_unfiltered << "%" << endl;
+    //cout << counter_unfiltered << endl;
+    cout << "average recall for filtered queries = " << recall_sum_filtered / counter_filtered << "%" << endl;
+    //cout << "average recall for unfiltered queries = " << recall_sum_unfiltered / counter_unfiltered << "%" << endl;
 
 
 
@@ -298,14 +297,14 @@ int main(int argc, char *argv[]){
 
     //RUN STITCHED VAMANA 
 
-    // start = std::chrono::high_resolution_clock::now();
+    // auto start = std::chrono::high_resolution_clock::now();
 
     // cout << endl << "RUNNING STITCHED VAMANA \n\n";
-    // //vector<RRGraph> graphs = v.StitchedVamana(d, 100, 32, 13, 1);
-    // GraphCollection graphs = v.StitchedVamanaParallel(d,100, 13, 13, 1);
+    // vector<RRGraph> graphs = v.StitchedVamana(d, 100, 32, 13, 1);
+    // //GraphCollection graphs = v.StitchedVamanaParallel(d,100, 13, 13, 1);
 
-    // end = std::chrono::high_resolution_clock::now();
-    // duration = std::chrono::duration_cast<std::chrono::seconds>(end - start).count();
+    // auto end = std::chrono::high_resolution_clock::now();
+    // auto duration = std::chrono::duration_cast<std::chrono::seconds>(end - start).count();
 
     // std::cout << "Stitched Vamana index created in : " << duration << " seconds" << std::endl;
 
