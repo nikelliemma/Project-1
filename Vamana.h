@@ -50,7 +50,7 @@ class Vamana{
         void RobustPruning(RRGraph graph, int query, std::unordered_set<int> V_set, float a, int R, std::vector<std::vector<type> > dataset);
         template <typename type>
         int find_medoid(std::vector<std::vector<type> > dataset);
-        int find_medoid_filtered(std::vector<Data_Point> dataset, int filter);
+        //int find_medoid_filtered(std::vector<Data_Point> dataset, int filter);
         double Get_Recall(std::vector<int> vec1, std::vector<int> vec2);
         double Get_Recall_Filtered(std::vector<int> knns, std::vector<int> vec2, FilteredDataset dataset, int k, int filter);
         void create_vamana_index(std::string filepath, int L, int R, int alpha);

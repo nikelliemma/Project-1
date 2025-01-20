@@ -185,77 +185,6 @@ int Vamana::find_medoid(std::vector<std::vector<type> > dataset){
     return medoid_index;    
 }
 
-// int Vamana::find_medoid_filtered(std::vector<Data_Point> dataset, int filter) {
-
-//     int n = dataset.size();
-//     int medoid_index = -1;
-//     double min_total_distance = std::numeric_limits<double>::max();
-
-//     // Filtered indices of the dataset that match the categorical value
-//     std::vector<int> filtered_indices;
-//     for (int i = 0; i < n; ++i) {
-//         if (dataset[i].categorical == filter) {
-//             filtered_indices.push_back(i);
-//         }
-//     }
-
-//     int filtered_size = filtered_indices.size();
-
-//     // Return -1 if no data points match the filter
-//     if (filtered_size == 0) {
-//         return -1;
-//     }
-
-//     // Compute the medoid using only filtered data points
-//     for (int i_idx = 0; i_idx < filtered_size; ++i_idx) {
-//         int i = filtered_indices[i_idx];
-//         double total_distance = 0.0;
-
-//         for (int j_idx = 0; j_idx < filtered_size; ++j_idx) {
-//             int j = filtered_indices[j_idx];
-//             if (i != j) {
-//                 total_distance += euclidean_distance(dataset[i].data_vector, dataset[j].data_vector);
-//             }
-//         }
-
-//         if (total_distance < min_total_distance) {
-//             min_total_distance = total_distance;
-//             medoid_index = i;
-//         }
-//     }
-
-//     return medoid_index;
-// }
-
-
-
-
-
-// int Vamana::find_medoid_f(std::vector<Data_Point> dataset){
-
-//     int n = dataset.size();
-//     int d = dataset[0].data_vector.size();
-//     int medoid_index = -1;
-//     double min_total_distance = std::numeric_limits<double>::max();
-    
-//     for(int i = 0; i < n; ++i){
-
-//         double total_distance = 0.0;
-        
-//         for(int j = 0; j < n; ++j){
-//             if(i != j){
-//                 total_distance += euclidean_distance(dataset[i].data_vector, dataset[j].data_vector);
-//             }
-//         }
-        
-//         if(total_distance < min_total_distance){
-//             min_total_distance = total_distance;
-//             medoid_index = i;
-//         }
-//     }
-    
-//     return medoid_index;    
-// }
 
 
 //check if the min heap has elements that are not in the visited set
@@ -959,7 +888,7 @@ RRGraph Vamana::Filtered_Vamana_Index(FilteredDataset dataset_obj, int L, int R,
     std::vector<int> perm = std::move(get_random_permutation(N)); 
 
     std::map<int, int> filter_map = Filtered_Find_Medoid(dataset, filters_set, 1);
-
+    
     //L = filter_map.size() * 10;
 
     std::vector<int> visited;
@@ -1930,4 +1859,79 @@ template RRGraph Vamana::Vamana_Index<unsigned char>(std::vector<std::vector<uns
 //     //return the k-NNs and the visited nodes set
 //     return {result, visited};
     
+// }
+
+
+
+
+// int Vamana::find_medoid_filtered(std::vector<Data_Point> dataset, int filter) {
+
+//     int n = dataset.size();
+//     int medoid_index = -1;
+//     double min_total_distance = std::numeric_limits<double>::max();
+
+//     // Filtered indices of the dataset that match the categorical value
+//     std::vector<int> filtered_indices;
+//     for (int i = 0; i < n; ++i) {
+//         if (dataset[i].categorical == filter) {
+//             filtered_indices.push_back(i);
+//         }
+//     }
+
+//     int filtered_size = filtered_indices.size();
+
+//     // Return -1 if no data points match the filter
+//     if (filtered_size == 0) {
+//         return -1;
+//     }
+
+//     // Compute the medoid using only filtered data points
+//     for (int i_idx = 0; i_idx < filtered_size; ++i_idx) {
+//         int i = filtered_indices[i_idx];
+//         double total_distance = 0.0;
+
+//         for (int j_idx = 0; j_idx < filtered_size; ++j_idx) {
+//             int j = filtered_indices[j_idx];
+//             if (i != j) {
+//                 total_distance += euclidean_distance(dataset[i].data_vector, dataset[j].data_vector);
+//             }
+//         }
+
+//         if (total_distance < min_total_distance) {
+//             min_total_distance = total_distance;
+//             medoid_index = i;
+//         }
+//     }
+
+//     return medoid_index;
+// }
+
+
+
+
+
+// int Vamana::find_medoid_f(std::vector<Data_Point> dataset){
+
+//     int n = dataset.size();
+//     int d = dataset[0].data_vector.size();
+//     int medoid_index = -1;
+//     double min_total_distance = std::numeric_limits<double>::max();
+    
+//     for(int i = 0; i < n; ++i){
+
+//         double total_distance = 0.0;
+        
+//         for(int j = 0; j < n; ++j){
+//             if(i != j){
+//                 total_distance += euclidean_distance(dataset[i].data_vector, dataset[j].data_vector);
+//             }
+//         }
+        
+//         if(total_distance < min_total_distance){
+//             min_total_distance = total_distance;
+//             medoid_index = i;
+//         }
+//     }
+    
+//     return medoid_index;    
 // }

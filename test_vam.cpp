@@ -82,35 +82,18 @@ std::vector<int> findKNearestNeighborsForQuery(FilteredDataset& dataset,
 
 
 
-// map<int, int> find_starting_points(RRGraph Vam, map<int, int> filter_map, int query, Vamana v, int L, FilteredDataset d, FilteredDataset q){
+map<int, int> find_starting_points(RRGraph Vam, map<int, int> filter_map, int query, Vamana v, int L, FilteredDataset d, FilteredDataset q){
 
-//     map<int, int> starting_points;
+    map<int, int> starting_points;
 
-//     for(int i = 0; i < filter_map.size(); i++){
-//         LVPair res = v.FilteredGreedySearch(Vam, filter_map, query, 1, L, d.get_filter_set(), d.get_dataset(), q.get_dataset());
-//         starting_points[i] = res.first[0];
-//     }
+    for(int i = 0; i < filter_map.size(); i++){
+        LVPair res = v.FilteredGreedySearch(Vam, filter_map, query, 1, L, d.get_filter_set(), d.get_dataset(), q.get_dataset());
+        starting_points[i] = res.first[0];
+    }
 
-//     return starting_points;
-// }
+    return starting_points;
+}
 
-
-// int countSimilarElements(const std::vector<int>& vec1, const std::vector<int>& vec2) {
-//     // Use sets to ensure uniqueness and efficient lookup
-//     std::unordered_set<int> set1(vec1.begin(), vec1.end());
-//     std::unordered_set<int> set2(vec2.begin(), vec2.end());
-
-//     int count = 0;
-
-//     // Iterate through the first set and check if elements exist in the second set
-//     for (const int& elem : set1) {
-//         if (set2.find(elem) != set2.end()) {
-//             count++;  // Increment count for each common element
-//         }
-//     }
-
-//     return count;
-// }
 
 
 int main(int argc, char *argv[]){
@@ -198,30 +181,28 @@ int main(int argc, char *argv[]){
     Vamana v(R,L,a);
 
 
-    auto start = std::chrono::high_resolution_clock::now();
+    // auto start = std::chrono::high_resolution_clock::now();
 
-    float alpha = 1.0;
+    // float alpha = 1.0;
 
-    RRGraph Vam = v.Filtered_Vamana_Index_Parallel(d, L, R, alpha);
-    auto end = std::chrono::high_resolution_clock::now();
-    auto duration = std::chrono::duration_cast<std::chrono::seconds>(end - start).count();
+    // RRGraph Vam = v.Filtered_Vamana_Index(d, L, R, alpha);
+    // auto end = std::chrono::high_resolution_clock::now();
+    // auto duration = std::chrono::duration_cast<std::chrono::seconds>(end - start).count();
 
-    std::cout << "Filtered Vamana index created in : " << duration << " seconds" << std::endl;
+    // std::cout << "Filtered Vamana index created in : " << duration << " seconds" << std::endl;
 
-    Vam.print_graph();
-    Vam.set_nodes_num(d.get_dataset().size());
-    //Vam.write_to_binary_file("parallel_filtered_vamana_index.bin");
+    // Vam.print_graph();
+    // Vam.set_nodes_num(d.get_dataset().size());
+    // Vam.write_to_binary_file("test_vamana_index.bin");
 
     
-    // RRGraph Vam(R);
-    // Vam.read_from_binary_file("vamana_index_2.bin");
+    RRGraph Vam(R);
+    Vam.read_from_binary_file("filtered_vamana_index.bin");
 
     // Vam.print_graph();
 
     map<int, int> filter_map = v.Filtered_Find_Medoid(d.get_dataset(),d.get_filter_set(),1);
 
-    
-    
     string filename_1 = "datasets/dummy-queries.bin";
 
     FilteredDataset q;
@@ -236,7 +217,10 @@ int main(int argc, char *argv[]){
     int counter_unfiltered = 0;
     double recall_sum_filtered = 0.0;
     double recall_sum_unfiltered = 0.0;
-    for(int i = 0; i < q.get_dataset().size();i++){
+
+    for(int i = 0; i < 1000;i++){
+
+        // map<int, int> filter_map = find_starting_points(Vam, filter_map, i, v, L, d, q);
 
         if(q.get_query_type(i) == 1){
 
@@ -253,38 +237,37 @@ int main(int argc, char *argv[]){
 
             recall_sum_filtered += recall;
 
-            cout << "query " << i << " recall = " << recall << endl;
+            //cout << "query " << i << " recall = " << recall << endl;
+
+        }
+        if(q.get_query_type(i) == 0){
+
+            auto knns = findKNearestNeighborsForQuery(d, q.get_data_point(i), q.get_data_point(i).categorical, k);
+
+            if(knns.size() == 0) continue;
+            //if(q.get_data_point(i).categorical > filter_map.size()) continue;
+
+            counter_unfiltered++;
+
+            L = filter_map.size() * 10;
+            LVPair res = v.FilteredGreedySearch(Vam, filter_map, i, k, L, d.get_filter_set(), d.get_dataset(), q.get_dataset());
+            double recall = v.Get_Recall(knns, res.first);
+
+
+            recall_sum_unfiltered += recall;
+
+            //cout << "query " << i << " recall = " << recall << endl;
+
+            //LVPair res = v.FilteredGreedySearch(Vam1, filter_map, i, k, L, d.get_filter_set(), d.get_dataset(), q.get_dataset());
+            //L = filter_map.size() * 10;
+            //map<int, int> starting_points = find_starting_points(Vam, filter_map, i, v, L, d, q);
+            //LVPair res = v.FilteredGreedySearch(Vam, starting_points, i, k, L, d.get_filter_set(), d.get_dataset(), q.get_dataset());
 
         }
     }
-    
-    std::cout << "Filtered Vamana index created in : " << duration << " seconds" << std::endl;
-    //     if(q.get_query_type(i) == 0){
 
-    //         auto knns = findKNearestNeighborsForQuery(d, q.get_data_point(i), q.get_data_point(i).categorical, k);
-
-    //         if(knns.size() == 0) continue;
-    //         //if(q.get_data_point(i).categorical > filter_map.size()) continue;
-
-    //         counter_unfiltered++;
-
-    //         L = filter_map.size() * 10;
-    //         LVPair res = v.FilteredGreedySearch(Vam, filter_map, i, k, L, d.get_filter_set(), d.get_dataset(), q.get_dataset());
-    //         double recall = v.Get_Recall(knns, res.first);
-
-
-    //         recall_sum_unfiltered += recall;
-
-    //         //LVPair res = v.FilteredGreedySearch(Vam1, filter_map, i, k, L, d.get_filter_set(), d.get_dataset(), q.get_dataset());
-    //         //L = filter_map.size() * 10;
-    //         //map<int, int> starting_points = find_starting_points(Vam, filter_map, i, v, L, d, q);
-    //         //LVPair res = v.FilteredGreedySearch(Vam, starting_points, i, k, L, d.get_filter_set(), d.get_dataset(), q.get_dataset());
-
-    //     }
-    // }
-    //cout << counter_unfiltered << endl;
     cout << "average recall for filtered queries = " << recall_sum_filtered / counter_filtered << "%" << endl;
-    //cout << "average recall for unfiltered queries = " << recall_sum_unfiltered / counter_unfiltered << "%" << endl;
+    cout << "average recall for unfiltered queries = " << recall_sum_unfiltered / counter_unfiltered << "%" << endl;
 
 
 

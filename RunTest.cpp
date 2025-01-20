@@ -161,50 +161,86 @@ int main(int argc, char *argv[]){
             printf("Unknow error. Terminating\n");
             exit(1);
     }
+
+    return 0;
 }
 
 
-// Function to read the file and store closest points into a vector of vectors
-std::vector<std::vector<int>> readClosestPoints(const std::string& filePath) {
-    // Vector of vectors to store closest points for each query
-    std::vector<std::vector<int>> closestPoints;
 
-    // Open the file
-    std::ifstream inputFile(filePath);
-    if (!inputFile.is_open()) {
-        std::cerr << "Error: Unable to open file!" << std::endl;
-        return closestPoints; // Return empty vector
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// // Function to compute Euclidean distance between two vectors
+float euclideanDistance(const std::vector<float>& a, const std::vector<float>& b) {
+    float dist = 0.0;
+    for (size_t i = 0; i < a.size(); ++i) {
+        dist += (a[i] - b[i]) * (a[i] - b[i]);
+    }
+    return std::sqrt(dist);
+}
+
+// Function to find k-nearest neighbors for a single query (returns indices)
+std::vector<int> findKNearestNeighborsForQuery(FilteredDataset& dataset, 
+                                               const Data_Point& queryPoint, 
+                                               int queryFilter, int k) {
+    // Preprocess the dataset by grouping indices by `categorical`
+    std::unordered_map<int, std::vector<int>> groupedIndices;
+    for (int i = 0; i < dataset.get_vectors_num(); ++i) {
+        groupedIndices[dataset.get_data_point(i).categorical].push_back(i);
     }
 
-    // Read the file line by line
-    std::string line;
-    while (std::getline(inputFile, line)) {
-        // Check if the line contains a query
-        if (line.find("Query") != std::string::npos) {
-            // Find the next line with closest points
-            if (std::getline(inputFile, line)) {
-                // Parse the points
-                std::istringstream ss(line);
-                std::vector<int> points;
-                std::string point;
+    std::priority_queue<std::pair<float, int>> pq; // Max-heap for distances and indices
 
-                while (std::getline(ss, point, ',')) {
-                    try {
-                        points.push_back(std::stoi(point));
-                    } catch (const std::invalid_argument& e) {
-                        //std::cerr << "Error: Invalid number format in file." << std::endl;
-                    }
+    // Determine dataset subset to compare
+    if (queryFilter != -1) {
+        // Compare only to points with the same filter
+        if (groupedIndices.find(queryFilter) != groupedIndices.end()) {
+            for (int idx : groupedIndices[queryFilter]) {
+                const auto& datasetPoint = dataset.get_data_point(idx);
+                float dist = euclideanDistance(queryPoint.data_vector, datasetPoint.data_vector);
+                pq.push({dist, idx});
+                if (pq.size() > k) {
+                    pq.pop();
                 }
+            }
+        }
 
-                // Add points to the main vector
-                closestPoints.push_back(points);
+    } else {
+        // Compare to all points (no filter restriction)
+        for (const auto& [filter, indices] : groupedIndices) {
+            for (int idx : indices) {
+                const auto& datasetPoint = dataset.get_data_point(idx);
+                float dist = euclideanDistance(queryPoint.data_vector, datasetPoint.data_vector);
+                pq.push({dist, idx});
+                if (pq.size() > k) {
+                    pq.pop();
+                }
             }
         }
     }
 
-    // Close the file
-    inputFile.close();
-    return closestPoints;
+    // Collect the k-nearest neighbors (indices only)
+    std::vector<int> neighborIndices;
+    while (!pq.empty()) {
+        neighborIndices.push_back(pq.top().second);
+        pq.pop();
+    }
+    std::reverse(neighborIndices.begin(), neighborIndices.end()); // Optional: Sort by ascending distance
+
+    return neighborIndices;
 }
 
 void runFiltered(int L, int R ,int alpha,int k){
@@ -216,18 +252,57 @@ void runFiltered(int L, int R ,int alpha,int k){
 
     Vamana v(R,L,alpha);
 
+    map<int, int> filter_map = v.Filtered_Find_Medoid(d.get_dataset(),d.get_filter_set(),1);
 
-    auto start = std::chrono::high_resolution_clock::now();
+    string filename_1 = "datasets/dummy-queries.bin";
 
-    RRGraph Vam = v.Filtered_Vamana_Index(d, L, R, alpha);
-    Vam.print_graph();
-    Vam.set_nodes_num(d.get_dataset().size());
-    Vam.write_to_binary_file("vamana_index.bin");
+    FilteredDataset q;
+    q.set_filepath(filename_1);
+    q.read_Query_set();
 
-    auto end = std::chrono::high_resolution_clock::now();
-    auto duration = std::chrono::duration_cast<std::chrono::seconds>(end - start).count();
 
-    std::cout << "Filtered Vamana index created in : " << duration << " seconds" << std::endl;
+    RRGraph Vam(R);
+    Vam.read_from_binary_file("filtered_vamana_index.bin");
+
+    int counter_filtered = 0;
+    int counter_unfiltered = 0;
+    double recall_sum_filtered = 0.0;
+    double recall_sum_unfiltered = 0.0;
+    for(int i = 0; i < q.get_dataset().size();i++){
+
+        if(q.get_query_type(i) == 1){
+
+            auto knns = findKNearestNeighborsForQuery(d, q.get_data_point(i), q.get_data_point(i).categorical, k);
+
+            if(knns.size() == 0) continue;
+            if(q.get_data_point(i).categorical > filter_map.size()) continue;
+
+            counter_filtered++;
+            LVPair res = v.FilteredGreedySearch(Vam, filter_map, i, k, L, d.get_filter_set(), d.get_dataset(), q.get_dataset());
+
+            double recall = v.Get_Recall(knns, res.first);
+
+            recall_sum_filtered += recall;
+
+        }
+        if(q.get_query_type(i) == 0){
+
+            auto knns = findKNearestNeighborsForQuery(d, q.get_data_point(i), q.get_data_point(i).categorical, k);
+
+            if(knns.size() == 0) continue;
+
+            counter_unfiltered++;
+
+            L = filter_map.size() * 10;
+            LVPair res = v.FilteredGreedySearch(Vam, filter_map, i, k, L, d.get_filter_set(), d.get_dataset(), q.get_dataset());
+            double recall = v.Get_Recall(knns, res.first);
+
+            recall_sum_unfiltered += recall;
+
+        }
+    }
+    cout << "average recall for filtered queries = " << recall_sum_filtered / counter_filtered << "%" << endl;
+    cout << "average recall for unfiltered queries = " << recall_sum_unfiltered / counter_unfiltered << "%" << endl;
 
     return;
 }
@@ -252,21 +327,22 @@ void runVamana(int L, int R ,int alpha,int k){
     d1.read_dataset();
 
 
-    auto start = std::chrono::high_resolution_clock::now();
+    //auto start = std::chrono::high_resolution_clock::now();
 
     Vamana v(R, L, alpha);
 
     //v.create_vamana_index("siftsmall_base.fvecs", 50, 20, 1);
 
-    RRGraph Vam = v.Vamana_Index(d.get_dataset(), L, R, alpha);
+    //RRGraph Vam = v.Vamana_Index(d.get_dataset(), L, R, alpha);
 
-    auto end = std::chrono::high_resolution_clock::now();
-    auto duration = std::chrono::duration_cast<std::chrono::seconds>(end - start).count();
+    //auto end = std::chrono::high_resolution_clock::now();
+    //auto duration = std::chrono::duration_cast<std::chrono::seconds>(end - start).count();
 
-
+    RRGraph Vam(R);
+    Vam.read_from_binary_file("vamana_index.bin");
 
     //Vam.print_graph();
-    std::cout << "Vamana index created in : " << duration << " seconds" << std::endl;   
+    //std::cout << "Vamana index created in : " << duration << " seconds" << std::endl;   
 
 
     int medoid = 8736;
@@ -286,6 +362,9 @@ void runVamana(int L, int R ,int alpha,int k){
 
     return;
 }
+
+
+
 
 void runStitched(string filename, int L, int R ,int alpha,int k, int Rst){
 
